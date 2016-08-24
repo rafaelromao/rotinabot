@@ -1,0 +1,111 @@
+﻿{
+  "identifier": "rotinabot",
+  "accessKey": "",
+  "messageReceivers": [
+    {
+      "type": "InitialInteractionReceiver",
+      "mediaType": "text/plain",
+      "content": "^(oi|olá|ola|começar|comecar|iniciar|start|/start)$",
+      "state": "default",
+      "outState": "starting"
+    },
+    {
+      "type": "NewTaskReceiver",
+      "mediaType": "text/plain",
+      "content": "(/newtask)",
+      "outState": "waitingTaskName"
+    },
+    {
+      "type": "WaitingTaskNameReceiver",
+      "mediaType": "text/plain",
+      "content": "^((?!(/.*)|(^[0-9]$)|oi|olá|ola|começar|comecar|iniciar|start).)*$"
+    },
+    {
+      "type": "WaitingTaskDaysReceiver",
+      "mediaType": "text/plain",
+      "content": "^(?!/.*).*$",
+      "state": "waitingTaskDays"
+    },
+    {
+      "type": "WaitingTaskTimeReceiver",
+      "mediaType": "text/plain",
+      "content": "^(?!/.*).*$",
+      "state": "waitingTaskTime"
+    },
+    {
+      "type": "ConfirmNewTaskReceiver",
+      "mediaType": "text/plain",
+      "content": "(/confirmnewtask)",
+      "state": "waitingTaskConfirmation",
+      "outState": "default"
+    },
+    {
+      "type": "ShowTodaysRoutineReceiver",
+      "mediaType": "text/plain",
+      "content": "(/showmyroutine)"
+    },
+    {
+      "type": "ShowAllMyRoutineReceiver",
+      "mediaType": "text/plain",
+      "content": "(/showallmyroutine)",
+      "outState": "default"
+    },
+    {
+      "type": "ShowAllTaskForDeletionRoutineReceiver",
+      "mediaType": "text/plain",
+      "content": "(/deletetask)"
+    },
+    {
+      "type": "ConfirmDeleteTaskReceiver",
+      "mediaType": "text/plain",
+      "content": "(/confirmdeletetask)",
+      "state": "waitingDeleteTaskConfirmation",
+      "outState": "default"
+    },
+    {
+      "type": "CancelReceiver",
+      "mediaType": "text/plain",
+      "content": "(/cancel)",
+      "outState": "default"
+    },
+    {
+      "type": "TaskSelectionReceiver",
+      "mediaType": "text/plain",
+      "content": "^(?!/.*).*$",
+      "state": "waitingTaskSelection"
+    },
+    {
+      "type": "DeleteTaskSelectionReceiver",
+      "mediaType": "text/plain",
+      "content": "^(?!\\/.*).*$",
+      "state": "waitingDeleteTaskSelection"
+    },
+    {
+      "type": "ScheduleReminderReceiver",
+      "mediaType": "application/vnd.lime.identity"
+    }
+  ],
+  "settings": {
+    "phraseology": {
+      "initialMessage": "Olá, em que posso ajudar para que você tenha uma rotina mais organizada?",
+      "whatIHaveForToday": "O que tenho para hoje?",
+      "whatIHaveForTheWeek": "O que tenho para a semana?",
+      "includeATaskInMyRoutine": "Inclua uma tarefa à minha rotina",
+      "excludeATaskFromMyRoutine": "Exclua uma tarefa da minha rotina",
+      "NoTaskForToday": "Não há nenhuma tarefa pendente para hoje!"
+    },
+    "commands": {
+      "showMyRoutine": "/showmyroutine",
+      "newtask": "/newtask",
+      "confirmnewtask": "/confirmnewtask",
+      "cancel": "/cancel",
+      "showallmyroutine": "/showallmyroutine",
+      "deletetask": "/deletetask",
+      "confirmdeletetask": "/confirmdeletetask"
+    }
+  },
+  "settingsType": "Settings",
+  "serviceProviderType": "ServiceProvider",
+  "startupType": "Startup",
+  "schemaVersion": 2
+}
