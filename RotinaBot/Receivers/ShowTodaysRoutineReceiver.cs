@@ -33,28 +33,30 @@ namespace RotinaBot.Receivers
             if (!todaysTasks.Any())
             {
                 await Sender.SendMessageAsync(Settings.Phraseology.NoTaskForToday, message.From, cancellationToken);
-                StateManager.Instance.SetState(message.From, "default");
+                StateManager.Instance.SetState(message.From, Settings.States.Default);
             }
             else
             {
                 var select = new Select
                 {
-                    Text = "Abaixo está a lista de tarefas pendentes para hoje:"
+                    Text = Settings.Phraseology.HereAreYouTasksForToday
                 };
                 var options = todaysTasks.Select(task => new SelectOption
                 {
-                    Text = $"{task.Name} durante a {task.Time.GetValueOrDefault().Name().ToLower()}",
+                    Text = $"{task.Name} " +
+                           $"{Settings.Phraseology.During} " +
+                           $"{task.Time.GetValueOrDefault().Name().ToLower()}",
                     Value = new PlainText { Text = task.Id.ToString() }
                 }).ToList();
                 options.Add(new SelectOption
                 {
-                    Text = "Cancelar",
+                    Text = Settings.Phraseology.Cancel,
                     Order = options.Count,
                     Value = new PlainText { Text = Settings.Commands.Cancel }
                 });
                 select.Options = options.ToArray();
                 await Sender.SendMessageAsync(select, message.From, cancellationToken);
-                StateManager.Instance.SetState(message.From, "waitingTaskSelection");
+                StateManager.Instance.SetState(message.From, Settings.States.WaitingTaskSelection);
             }
         }
     }

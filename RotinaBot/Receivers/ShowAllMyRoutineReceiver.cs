@@ -25,14 +25,17 @@ namespace RotinaBot.Receivers
 
             if (!todaysTasks.Any())
             {
-                await Sender.SendMessageAsync("Não há nenhuma tarefa registrada!", message.From, cancellationToken);
+                await Sender.SendMessageAsync(Settings.Phraseology.NoTask, message.From, cancellationToken);
             }
             else
             {
                 var text = new StringBuilder();
-                text.AppendLine("Abaixo está a lista de tarefas registradas para a semana:");
+                text.AppendLine(Settings.Phraseology.HereAreYourTasksForTheWeek);
                 text.AppendLine();
-                todaysTasks.ForEach(task => text.AppendLine($"- {task.Name} durante a {task.Time.GetValueOrDefault().Name().ToLower()} {task.Days.GetValueOrDefault().Name().ToLower()}."));
+                todaysTasks.ForEach(task => text.AppendLine($"- {task.Name} " +
+                                                            $"{Settings.Phraseology.During} " +
+                                                            $"{task.Time.GetValueOrDefault().Name().ToLower()} " +
+                                                            $"{task.Days.GetValueOrDefault().Name().ToLower()}."));
 
                 await Sender.SendMessageAsync(text.ToString(), message.From, cancellationToken);
             }

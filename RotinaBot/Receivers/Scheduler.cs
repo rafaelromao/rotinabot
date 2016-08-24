@@ -25,12 +25,10 @@ namespace RotinaBot.Receivers
 
         public async Task ConfigureScheduleAsync(Routine routine, Node from, RoutineTaskTimeValue time, CancellationToken cancellationToken)
         {
-            return;
-
             // Will send a message to itself, the next day only, reminding it to send a message with the routine for the given days and time for each client
             if (!routine.Schedules.Any(t => t == time))
             {
-                //delegation.DelegateAsync()
+                await _delegation.DelegateAsync(Identity.Parse("postmaster@scheduler.msging.net"), new [] { EnvelopeType.Message }, cancellationToken);
 
                 routine.Schedules = routine.Schedules.Concat(new[] { time }).ToArray();
                 var identity = new Node(_application.Identifier, _application.Domain, null);
@@ -40,12 +38,12 @@ namespace RotinaBot.Receivers
                     To = identity,
                     Content = new IdentityDocument(from.ToIdentity().ToString())
                 };
-                var isBeforeMorning = DateTime.Now.Hour < 8;
+                var isBeforeMorning = DateTime.Now.Hour < 6;
                 var isBeforeAfternoon = DateTime.Now.Hour < 12;
                 var isBeforeEvening = DateTime.Now.Hour < 18;
                 var firstMorningSchedule = isBeforeMorning 
-                    ? new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 8, 0 , 0) 
-                    : new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day + 1, 8, 0, 0);
+                    ? new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 6, 0 , 0) 
+                    : new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day + 1, 6, 0, 0);
                 var firstAfternoonSchedule = isBeforeAfternoon
                     ? new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 12, 0, 0)
                     : new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day + 1, 12, 0, 0);

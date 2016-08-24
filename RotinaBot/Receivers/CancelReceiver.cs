@@ -24,6 +24,8 @@ namespace RotinaBot.Receivers
                 routine.Tasks = routine.Tasks.Take(routine.Tasks.Length - 1).ToArray();
             }
             await SetRoutineAsync(message.From, routine, cancellationToken);
+
+            await Sender.SendMessageAsync(Settings.Phraseology.WheneverYouNeed, message.From, cancellationToken);
         }
     }
 }

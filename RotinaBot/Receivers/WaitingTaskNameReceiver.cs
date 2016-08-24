@@ -32,7 +32,7 @@ namespace RotinaBot.Receivers
                     {
                         new RoutineTask
                         {
-                            Id = routine.Tasks.Length,
+                            Id = DateTime.Now.Ticks,
                             Name = taskName
                         }
                     }).ToArray();

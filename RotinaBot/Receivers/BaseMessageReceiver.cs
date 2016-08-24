@@ -48,7 +48,7 @@ namespace RotinaBot.Receivers
 
         protected RoutineTask[] SortRoutineTasks(IEnumerable<RoutineTask> tasks)
         {
-            return tasks.OrderBy(t => t.Time.GetValueOrDefault()).ThenBy(t => t.Days.GetValueOrDefault()).ThenBy(t => t.Name).ToArray();
+            return tasks.OrderBy(t => t.Days.GetValueOrDefault()).ThenBy(t => t.Time.GetValueOrDefault()).ThenBy(t => t.Name).ToArray();
         }
     }
 }

@@ -15,7 +15,7 @@ namespace RotinaBot.Receivers
 
         public override async Task ReceiveAsync(Message message, CancellationToken cancellationToken)
         {
-            await Sender.SendMessageAsync("Certo! Qual o nome dessa nova tarefa?", message.From, cancellationToken);
+            await Sender.SendMessageAsync(Settings.Phraseology.WhatIsTheTaskName, message.From, cancellationToken);
         }
     }
 }

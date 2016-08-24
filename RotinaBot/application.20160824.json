@@ -5,20 +5,17 @@
     {
       "type": "InitialInteractionReceiver",
       "mediaType": "text/plain",
-      "content": "^(oi|olá|ola|começar|comecar|iniciar|start|/start)$",
-      "state": "default",
-      "outState": "starting"
+      "content": "^(oi|olá|ola|começar|comecar|iniciar|start|/start)$"
     },
     {
       "type": "NewTaskReceiver",
       "mediaType": "text/plain",
-      "content": "(/newtask)",
-      "outState": "waitingTaskName"
+      "content": "(/newtask)"
     },
     {
       "type": "WaitingTaskNameReceiver",
       "mediaType": "text/plain",
-      "content": "^((?!(/.*)|(^[0-9]$)|oi|olá|ola|começar|comecar|iniciar|start).)*$"
+      "content": "^((?!(/.*)|(^[0-9]*$)|oi|olá|ola|começar|comecar|iniciar|start).)*$"
     },
     {
       "type": "WaitingTaskDaysReceiver",
@@ -77,7 +74,7 @@
     {
       "type": "DeleteTaskSelectionReceiver",
       "mediaType": "text/plain",
-      "content": "^(?!\\/.*).*$",
+      "content": "^(?!/.*).*$",
       "state": "waitingDeleteTaskSelection"
     },
     {
@@ -92,7 +89,22 @@
       "whatIHaveForTheWeek": "O que tenho para a semana?",
       "includeATaskInMyRoutine": "Inclua uma tarefa à minha rotina",
       "excludeATaskFromMyRoutine": "Exclua uma tarefa da minha rotina",
-      "NoTaskForToday": "Não há nenhuma tarefa pendente para hoje!"
+      "NoTaskForToday": "Não há nenhuma tarefa pendente para hoje!",
+      "WheneverYouNeed": "Se precisar de mim, estou às ordens!",
+      "TheTaskWasRemoved": "Concluído! A tarefa foi removida da sua rotina!",
+      "TheTaskWasRegistered": "Parabéns! Essa tarefa foi incluída em sua rotina!",
+      "ConfirmDelete": "Confirma a exclusão da tarefa",
+      "During": "durante a",
+      "Confirm": "Confirmar",
+      "Cancel": "Cancel",
+      "TheTaskWasNotFound": "A tarefa não foi encontrada para se excluída!",
+      "SorryYouNeedToChooseAnOption": "Desculpe, por favor responda com uma das opções apresentadas!",
+      "WhatIsTheTaskName": "Certo! Qual o nome dessa nova tarefa?",
+      "HereAreYourNextTasks": "Olá! Aqui estão as próximas tarefas da sua rotina:",
+      "NoTask": "Não há nenhuma tarefa registrada!",
+      "HereAreYourTasksForTheWeek": "Abaixo está a lista de tarefas registradas para a semana:",
+      "ChooseATaskToBeDeleted": "Escolha a tarefa a ser excluída:",
+      "HereAreYouTasksForToday": "Abaixo está a lista de tarefas pendentes para hoje:"
     },
     "commands": {
       "showMyRoutine": "/showmyroutine",
@@ -102,7 +114,13 @@
       "showallmyroutine": "/showallmyroutine",
       "deletetask": "/deletetask",
       "confirmdeletetask": "/confirmdeletetask"
-    }
+    },
+    "states": {
+      "default": "default",
+      "waitingDeleteTaskConfirmation": "waitingDeleteTaskConfirmation",
+      "waitingTaskSelection": "waitingTaskSelection",
+      "waitingDeleteTaskSelection": "waitingDeleteTaskSelection"
+    } 
   },
   "settingsType": "Settings",
   "serviceProviderType": "ServiceProvider",

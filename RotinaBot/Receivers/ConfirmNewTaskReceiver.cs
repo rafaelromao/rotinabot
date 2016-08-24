@@ -30,8 +30,7 @@ namespace RotinaBot.Receivers
             await _scheduler.ConfigureScheduleAsync(routine, message.From, task.Time.GetValueOrDefault(), cancellationToken);
             await SetRoutineAsync(message.From, routine, cancellationToken);
             await
-                Sender.SendMessageAsync("Parabéns! Essa tarefa foi incluída em sua rotina!", message.From,
-                    cancellationToken);
+                Sender.SendMessageAsync(Settings.Phraseology.TheTaskWasRegistered, message.From, cancellationToken);
         }
     }
 }

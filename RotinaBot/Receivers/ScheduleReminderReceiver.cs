@@ -48,19 +48,21 @@ namespace RotinaBot.Receivers
                 {
                     var select = new Select
                     {
-                        Text = "Olá! Aqui estão as próximas tarefas da sua rotina:"
+                        Text = Settings.Phraseology.HereAreYourNextTask
                     };
                     var options = todaysTasks.Select(task => new SelectOption
                     {
-                        Text = $"{task.Name}.",
+                        Text = task.Name,
+                        Value = new PlainText { Text = task.Id.ToString() }
                     }).ToList();
                     options.Add(new SelectOption
                     {
-                        Text = "Cancelar"
+                        Text = Settings.Phraseology.Cancel,
+                        Value = new PlainText { Text = Settings.Commands.Cancel }
                     });
                     select.Options = options.ToArray();
                     await Sender.SendMessageAsync(select, message.From, cancellationToken);
-                    StateManager.Instance.SetState(message.From, "waitingTaskSelection");
+                    StateManager.Instance.SetState(message.From, Settings.States.WaitingTaskSelection);
                 }
 
                 // Schedule next day

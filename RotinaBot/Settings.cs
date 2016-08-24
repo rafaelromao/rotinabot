@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Lime.Protocol;
 
 namespace RotinaBot
 {
@@ -10,6 +11,7 @@ namespace RotinaBot
     {
         public Phraseologies Phraseology { get; set; }
         public Commands Commands { get; set; }
+        public States States { get; set; }
     }
 
     public class Phraseologies
@@ -20,6 +22,21 @@ namespace RotinaBot
         public string IncludeATaskInMyRoutine { get; set; }
         public string ExcludeATaskFromMyRoutine { get; set; }
         public string NoTaskForToday { get; set; }
+        public string WheneverYouNeed { get; set; }
+        public string TheTaskWasRemoved { get; set; }
+        public string TheTaskWasRegistered { get; set; }
+        public string ConfirmDelete { get; set; }
+        public string During { get; set; }
+        public string Confirm { get; set; }
+        public string Cancel { get; set; }
+        public string TheTaskWasNotFound { get; set; }
+        public string SorryYouNeedToChooseAnOption { get; set; }
+        public string WhatIsTheTaskName { get; set; }
+        public string HereAreYourNextTask { get; set; }
+        public string NoTask { get; set; }
+        public string HereAreYourTasksForTheWeek { get; set; }
+        public string ChooseATaskToBeDeleted { get; set; }
+        public string HereAreYouTasksForToday { get; set; }
     }
 
     public class Commands
@@ -31,5 +48,13 @@ namespace RotinaBot
         public string ShowAllMyRoutine { get; set; }
         public string DeleteTask { get; set; }
         public string ConfirmDeleteTask { get; set; }
+    }
+
+    public class States
+    {
+        public string Default { get; set; }
+        public string WaitingDeleteTaskConfirmation { get; set; }
+        public string WaitingTaskSelection { get; set; }
+        public string WaitingDeleteTaskSelection { get; set; }
     }
 }

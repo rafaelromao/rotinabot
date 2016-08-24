@@ -22,7 +22,7 @@ namespace RotinaBot.Receivers
             routine.Tasks = routine.Tasks.Take(routine.Tasks.Length - 1).ToArray();
             await SetRoutineAsync(message.From, routine, cancellationToken);
 
-            await Sender.SendMessageAsync("Concluído! A tarefa foi removida da sua rotina!", message.From, cancellationToken);
+            await Sender.SendMessageAsync(Settings.Phraseology.TheTaskWasRemoved, message.From, cancellationToken);
         }
     }
 }

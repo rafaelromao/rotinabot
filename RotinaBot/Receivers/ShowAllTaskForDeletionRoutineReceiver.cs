@@ -24,28 +24,31 @@ namespace RotinaBot.Receivers
 
             if (!todaysTasks.Any())
             {
-                await Sender.SendMessageAsync("Não há nenhuma tarefa registrada!", message.From, cancellationToken);
-                StateManager.Instance.SetState(message.From, "default");
+                await Sender.SendMessageAsync(Settings.Phraseology.NoTask, message.From, cancellationToken);
+                StateManager.Instance.SetState(message.From, Settings.States.Default);
             }
             else
             {
                 var select = new Select
                 {
-                    Text = "Escolha a tarefa a ser excluída:"
+                    Text = Settings.Phraseology.ChooseATaskToBeDeleted
                 };
                 var options = todaysTasks.Select(task => new SelectOption
                 {
-                    Text = $"{task.Name} durante a {task.Time.GetValueOrDefault().Name().ToLower()} {task.Days.GetValueOrDefault().Name().ToLower()}",
+                    Text = $"{task.Name} " +
+                           $"{Settings.Phraseology.During} " +
+                           $"{task.Time.GetValueOrDefault().Name().ToLower()} " +
+                           $"{task.Days.GetValueOrDefault().Name().ToLower()}",
                     Value = new PlainText { Text = task.Id.ToString() }
                 }).ToList();
                 options.Add(new SelectOption
                 {
-                    Text = "Cancelar",
+                    Text = Settings.Phraseology.Cancel,
                     Value = new PlainText { Text = Settings.Commands.Cancel }
                 });
                 select.Options = options.ToArray();
                 await Sender.SendMessageAsync(select, message.From, cancellationToken);
-                StateManager.Instance.SetState(message.From, "waitingDeleteTaskSelection");
+                StateManager.Instance.SetState(message.From, Settings.States.WaitingDeleteTaskSelection);
             }
         }
     }

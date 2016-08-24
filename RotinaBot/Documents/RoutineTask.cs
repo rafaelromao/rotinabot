@@ -15,7 +15,7 @@ namespace RotinaBot.Documents
         private const string LASTTIME_KEY = "lasttime";
 
         [DataMember(Name = ID_KEY)]
-        public int Id { get; set; }
+        public long Id { get; set; }
         [DataMember(Name = OWNER_KEY)]
         public string Name { get; set; }
         [DataMember(Name = DAYS_KEY)]

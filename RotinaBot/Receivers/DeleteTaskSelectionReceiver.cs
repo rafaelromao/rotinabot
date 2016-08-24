@@ -35,33 +35,37 @@ namespace RotinaBot.Receivers
 
                     var select = new Select
                     {
-                        Text = $"Confirma a exclusão da tarefa '{task.Name} durante a {task.Time.GetValueOrDefault().Name().ToLower()} {task.Days.GetValueOrDefault().Name().ToLower()}'?",
+                        Text = $"{Settings.Phraseology.ConfirmDelete} '" +
+                               $"{task.Name} " +
+                               $"{Settings.Phraseology.During} " +
+                               $"{task.Time.GetValueOrDefault().Name().ToLower()} " +
+                               $"{task.Days.GetValueOrDefault().Name().ToLower()}'?",
                         Options = new[]
                         {
                         new SelectOption
                         {
-                            Text = "Confirmar",
-                            Value = new PlainText {Text = "/confirmdeletetask"}
+                            Text = Settings.Phraseology.Confirm,
+                            Value = new PlainText {Text = Settings.Commands.ConfirmDeleteTask }
                         },
                         new SelectOption
                         {
-                            Text = "Cancelar",
-                            Value = new PlainText {Text = "/canceldeletetask"}
+                            Text = Settings.Phraseology.Cancel,
+                            Value = new PlainText {Text = Settings.Commands.Cancel }
                         }
                     }
                     };
                     await Sender.SendMessageAsync(select, message.From, cancellationToken);
-                    StateManager.Instance.SetState(message.From, "waitingDeleteTaskConfirmation");
+                    StateManager.Instance.SetState(message.From, Settings.States.WaitingDeleteTaskConfirmation);
                 }
                 else
                 {
-                    await Sender.SendMessageAsync("A tarefa não foi encontrada para se excluída!", message.From, cancellationToken);
-                    StateManager.Instance.SetState(message.From, "default");
+                    await Sender.SendMessageAsync(Settings.Phraseology.TheTaskWasNotFound, message.From, cancellationToken);
+                    StateManager.Instance.SetState(message.From, Settings.States.Default);
                 }
             }
             catch (Exception e)
             {
-                await Sender.SendMessageAsync("Desculpe, por favor responda com uma das opções apresentadas!", message.From, cancellationToken);
+                await Sender.SendMessageAsync(Settings.Phraseology.SorryYouNeedToChooseAnOption, message.From, cancellationToken);
             }
         }
     }
