@@ -1,5 +1,4 @@
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Lime.Messaging.Contents;
 using Lime.Protocol;
@@ -7,6 +6,7 @@ using Shouldly;
 using RotinaBot.Tests.AcceptanceTests.Base;
 using RotinaBot.Tests.AcceptanceTests.Mocks;
 using NUnit.Framework;
+using RotinaBot.Documents;
 
 namespace RotinaBot.Tests.AcceptanceTests
 {
@@ -35,7 +35,11 @@ namespace RotinaBot.Tests.AcceptanceTests
             return document;
         }
 
-        private async Task CreateANewTaskFromTaskNameAsync(string taskName)
+        private async Task CreateANewTaskFromTaskNameAsync(
+            string taskName, 
+            RoutineTaskDaysValue days = RoutineTaskDaysValue.EveryDay, 
+            RoutineTaskTimeValue time = RoutineTaskTimeValue.Morning, 
+            bool cancel = false)
         {
             Message response;
             Select select;
@@ -60,7 +64,7 @@ namespace RotinaBot.Tests.AcceptanceTests
 
             // Inform task day
 
-            await Tester.SendMessageAsync(new PlainText { Text = select?.Options.First().Order.ToString() });
+            await Tester.SendMessageAsync(new PlainText { Text = ((int)days).ToString() });
 
             response = await Tester.ReceiveMessageAsync();
             response.ShouldNotBeNull();
@@ -75,7 +79,7 @@ namespace RotinaBot.Tests.AcceptanceTests
 
             // Inform task time
 
-            await Tester.SendMessageAsync(new PlainText { Text = select?.Options.First().Order.ToString() });
+            await Tester.SendMessageAsync(new PlainText { Text = ((int)time).ToString() });
 
             response = await Tester.ReceiveMessageAsync();
             response.ShouldNotBeNull();
@@ -87,7 +91,7 @@ namespace RotinaBot.Tests.AcceptanceTests
 
             // Confirm the new task
 
-            await Tester.SendMessageAsync(select?.Options.First().Value);
+            await Tester.SendMessageAsync(cancel ? Settings.Commands.Cancel : Settings.Commands.ConfirmNew );
 
             response = await Tester.ReceiveMessageAsync();
             response.ShouldNotBeNull();
@@ -95,7 +99,8 @@ namespace RotinaBot.Tests.AcceptanceTests
             document = response.Content as PlainText;
             actual = document?.Text;
 
-            expected = Settings.Phraseology.TheTaskWasRegistered;
+            expected = cancel ? Settings.Phraseology.WheneverYouNeed : Settings.Phraseology.TheTaskWasRegistered;
+
             expected.ShouldNotBeNull();
 
             actual.ShouldBe(expected);
@@ -219,6 +224,12 @@ namespace RotinaBot.Tests.AcceptanceTests
         }
 
         [Test]
+        public async Task StartCreatingANewTaskAndThenCancel()
+        {
+            await CreateANewTaskFromTaskNameAsync("Nova tarefa", cancel: true);
+        }
+
+        [Test]
         public async Task CheckANewTaskIsListed()
         {
             // Ensure there is no task already registered
@@ -282,9 +293,51 @@ namespace RotinaBot.Tests.AcceptanceTests
 
             select?.Options.Length.ShouldBe(3);
 
+            // Cancel the task selection
+
             await Tester.SendMessageAsync(Settings.Commands.Cancel);
 
             await Tester.IgnoreMessageAsync();
         }
+
+        [Test]
+        public async Task InsertATaskNotForTodayAndCheckItIsListedOkay()
+        {
+            // Ensure there is no task already registered
+
+            await ShowThereIsNothingForTheWeekAsync();
+
+            // Create a new task
+
+            const string taskName = "Nova tarefa";
+
+            await CreateANewTaskFromTaskNameAsync(taskName, RoutineTaskDaysValue.WeekEnds);
+
+            // Create another new task
+
+            await CreateANewTaskFromTaskNameAsync(taskName, RoutineTaskDaysValue.WorkDays);
+
+            // Create a third new task
+
+            await CreateANewTaskFromTaskNameAsync(taskName, RoutineTaskDaysValue.EveryDay);
+
+            // Request the bot to show the routine for the day
+
+            await Tester.SendMessageAsync(Settings.Commands.Show);
+
+            var response = await Tester.ReceiveMessageAsync();
+
+            var select = response.Content as Select;
+            select.ShouldNotBeNull();
+
+            select?.Options.Length.ShouldBe(3);
+
+            // Cancel the task selection
+
+            await Tester.SendMessageAsync(Settings.Commands.Cancel);
+
+            await Tester.IgnoreMessageAsync();
+        }
+
     }
 }
