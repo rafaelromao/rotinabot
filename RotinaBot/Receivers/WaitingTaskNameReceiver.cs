@@ -22,7 +22,7 @@ namespace RotinaBot.Receivers
             }
             catch (Exception)
             {
-                await Bot.InformAnOptionShallBeChosenAsync(message.From, cancellationToken);
+                await Bot.InformAProblemHasOcurredAsync(message.From, cancellationToken);
             }
         }
     }

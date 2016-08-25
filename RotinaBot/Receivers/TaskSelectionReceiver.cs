@@ -16,8 +16,15 @@ namespace RotinaBot.Receivers
         {
             try
             {
-                await Bot.MarkTaskAsCompletedAsync(message.From, message.Content, cancellationToken);
-                StateManager.Instance.SetState(message.From, Bot.Settings.States.Default);
+                if (await Bot.MarkTaskAsCompletedAsync(message.From, message.Content, cancellationToken))
+                {
+                    await Bot.InformTheTaskWasCompletedAsync(message.From, cancellationToken);
+                    StateManager.Instance.SetState(message.From, Bot.Settings.States.Default);
+                }
+                else
+                {
+                    await Bot.InformTheTaskWasNotFoundAsync(message.From, cancellationToken);
+                }
             }
             catch (Exception)
             {

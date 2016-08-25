@@ -118,24 +118,6 @@ namespace RotinaBot
 
         #region New
 
-        public async Task MarkTaskAsCompletedAsync(Node owner, Document content, CancellationToken cancellationToken)
-        {
-            int taskId;
-            int.TryParse(((PlainText)content)?.Text, out taskId);
-            var routine = await GetRoutineAsync(owner, cancellationToken);
-            var task = routine.Tasks.FirstOrDefault(t => t.Id == taskId);
-            if (task != null)
-            {
-                task.LastTime = DateTimeOffset.Now;
-                await SetRoutineAsync(owner, routine, cancellationToken);
-                await _sender.SendMessageAsync(Settings.Phraseology.KeepGoing, owner, cancellationToken);
-            }
-            else
-            {
-                await _sender.SendMessageAsync(Settings.Phraseology.CallMeWhenYouFinishATask, owner, cancellationToken);
-            }
-        }
-
         public async Task SetDaysForNewTaskAsync(Node owner, Document content, CancellationToken cancellationToken)
         {
             var daysText = ((PlainText)content)?.Text;
@@ -292,8 +274,8 @@ namespace RotinaBot
 
         public async Task<RoutineTask> PrepareTaskToBeDeletedAsync(Node owner, Document content, CancellationToken cancellationToken)
         {
-            int taskId;
-            int.TryParse(((PlainText)content)?.Text, out taskId);
+            long taskId;
+            long.TryParse(((PlainText)content)?.Text, out taskId);
             var routine = await GetRoutineAsync(owner, cancellationToken);
             var task = routine.Tasks.FirstOrDefault(t => t.Id == taskId);
             if (task != null)
@@ -511,6 +493,31 @@ namespace RotinaBot
             return true;
         }
 
+        public async Task<bool> MarkTaskAsCompletedAsync(Node owner, Document content, CancellationToken cancellationToken)
+        {
+            long taskId;
+            long.TryParse(((PlainText)content)?.Text, out taskId);
+            var routine = await GetRoutineAsync(owner, cancellationToken);
+            var task = routine.Tasks.FirstOrDefault(t => t.Id == taskId);
+            if (task == null)
+                return false;
+
+            task.LastTime = DateTimeOffset.Now;
+            await SetRoutineAsync(owner, routine, cancellationToken);
+
+            return true;
+        }
+
+        public async Task InformTheTaskWasCompletedAsync(Node owner, CancellationToken cancellationToken)
+        {
+            await _sender.SendMessageAsync(Settings.Phraseology.KeepGoing, owner, cancellationToken);
+        }
+
         #endregion
+
+        public async Task InformAProblemHasOcurredAsync(Node owner, CancellationToken cancellationToken)
+        {
+            await _sender.SendMessageAsync(Settings.Phraseology.SorryICannotHelpYouRightNow, owner, cancellationToken);
+        }
     }
 }
