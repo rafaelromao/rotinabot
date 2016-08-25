@@ -402,5 +402,72 @@ namespace RotinaBot.Tests.AcceptanceTests
 
             await Tester.IgnoreMessageAsync();
         }
+
+        [Test]
+        public async Task InsertATaskRemoveItAndCheckItIsNotListed()
+        {
+            // Ensure there is no task already registered
+
+            await ShowThereIsNothingForTheWeekAsync();
+
+            // Create a new task
+
+            const string taskName = "Nova tarefa";
+
+            await CreateANewTaskFromTaskNameAsync(taskName, RoutineTaskDaysValue.WeekEnds);
+
+            // Request the bot to delete a task
+
+            await Tester.SendMessageAsync(Settings.Commands.Delete);
+
+            var response = await Tester.ReceiveMessageAsync();
+
+            var select = response.Content as Select;
+            select.ShouldNotBeNull();
+
+            var expected = Settings.Phraseology.ChooseATaskToBeDeleted;
+            expected.ShouldNotBeNull();
+
+            var actual = select?.Text;
+            actual.ShouldBe(expected);
+
+            select?.Options.Length.ShouldBe(2);
+
+            // Select the first task to be deleted
+
+            await Tester.SendMessageAsync(select?.Options.First().Value);
+
+            response = await Tester.ReceiveMessageAsync();
+
+            select = response.Content as Select;
+            select.ShouldNotBeNull();
+
+            expected = Settings.Phraseology.Confirm;
+            expected.ShouldNotBeNull();
+
+            actual = select?.Options.First().Text;
+            actual.ShouldBe(expected);
+
+            select?.Options.Length.ShouldBe(2);
+
+            // Confirm the deletion
+
+            await Tester.SendMessageAsync(select?.Options.First().Value);
+
+            response = await Tester.ReceiveMessageAsync();
+
+            var document = response.Content as PlainText;
+            actual = document?.Text;
+
+            expected = Settings.Phraseology.TheTaskWasRemoved;
+            expected.ShouldNotBeNull();
+
+            actual.ShouldBe(expected);
+
+            // Request the bot to show all the tasks
+
+            await ShowThereIsNothingForTheWeekAsync();
+        }
+
     }
 }
