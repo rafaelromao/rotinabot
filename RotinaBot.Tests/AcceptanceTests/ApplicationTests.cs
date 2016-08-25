@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Lime.Messaging.Contents;
 using Shouldly;
@@ -19,10 +20,6 @@ namespace RotinaBot.Tests.AcceptanceTests
 
         private async Task<Select> SendHiAsync()
         {
-            // Get the expected response
-            var expected = Settings.Phraseology.InitialMessage;
-            expected.ShouldNotBeNull();
-
             // Send message to the bot
             await Tester.SendMessageAsync("Oi");
 
@@ -33,6 +30,10 @@ namespace RotinaBot.Tests.AcceptanceTests
             var document = response.Content as Select;
             var actual = document?.Text;
 
+            // Get the expected response
+            var expected = Settings.Phraseology.InitialMessage;
+            expected.ShouldNotBeNull();
+
             // Assert that the answer from the bot is the expected one
             actual.ShouldBe(expected);
 
@@ -42,10 +43,6 @@ namespace RotinaBot.Tests.AcceptanceTests
         [Test]
         public async Task ShowThereIsNothingForToday()
         {
-            // Get the expected response
-            var expected = Settings.Phraseology.NoTaskForToday;
-            expected.ShouldNotBeNull();
-
             // Send messages to the bot
             var select = await SendHiAsync();
 
@@ -59,6 +56,10 @@ namespace RotinaBot.Tests.AcceptanceTests
             var document = response.Content as PlainText;
             var actual = document?.Text;
 
+            // Get the expected response
+            var expected = Settings.Phraseology.NoTaskForToday;
+            expected.ShouldNotBeNull();
+
             // Assert that the answer from the bot is the expected one
             actual.ShouldBe(expected);
         }
@@ -66,10 +67,6 @@ namespace RotinaBot.Tests.AcceptanceTests
         [Test]
         public async Task ShowThereIsNothingForTheWeek()
         {
-            // Get the expected response
-            var expected = Settings.Phraseology.NoTask;
-            expected.ShouldNotBeNull();
-
             // Send messages to the bot
             var select = await SendHiAsync();
 
@@ -83,6 +80,10 @@ namespace RotinaBot.Tests.AcceptanceTests
             var document = response.Content as PlainText;
             var actual = document?.Text;
 
+            // Get the expected response
+            var expected = Settings.Phraseology.NoTask;
+            expected.ShouldNotBeNull();
+
             // Assert that the answer from the bot is the expected one
             actual.ShouldBe(expected);
         }
@@ -90,10 +91,6 @@ namespace RotinaBot.Tests.AcceptanceTests
         [Test]
         public async Task ShowThereIsNothingForDeletion()
         {
-            // Get the expected response
-            var expected = Settings.Phraseology.NoTask;
-            expected.ShouldNotBeNull();
-
             // Send messages to the bot
             var select = await SendHiAsync();
 
@@ -107,6 +104,10 @@ namespace RotinaBot.Tests.AcceptanceTests
             var document = response.Content as PlainText;
             var actual = document?.Text;
 
+            // Get the expected response
+            var expected = Settings.Phraseology.NoTask;
+            expected.ShouldNotBeNull();
+
             // Assert that the answer from the bot is the expected one
             actual.ShouldBe(expected);
         }
@@ -114,29 +115,84 @@ namespace RotinaBot.Tests.AcceptanceTests
         [Test]
         public async Task CreateANewTaskFromMenu()
         {
-            // Get the expected response
-            var expected = Settings.Phraseology.WhatIsTheTaskName;
-            expected.ShouldNotBeNull();
+            // Say Hi
 
-            // Send messages to the bot
             var select = await SendHiAsync();
 
             var option = select.Options.Single(o => o.Value.ToString() == Settings.Commands.NewTask);
             await Tester.SendMessageAsync(option.Value.ToString());
 
-            // Wait for the answer from the bot
             var response = await Tester.ReceiveMessageAsync();
             response.ShouldNotBeNull();
 
             var document = response.Content as PlainText;
             var actual = document?.Text;
 
-            // Assert that the answer from the bot is the expected one
+            // Choose new task
+
+            var expected = Settings.Phraseology.WhatIsTheTaskName;
+            expected.ShouldNotBeNull();
+
             actual.ShouldBe(expected);
 
+            // Inform task name
 
+            const string taskName = "Nova tarefa";
 
+            await Tester.SendMessageAsync(taskName);
 
+            response = await Tester.ReceiveMessageAsync();
+            response.ShouldNotBeNull();
+
+            select = response.Content as Select;
+            actual = select?.Text;
+
+            expected = Settings.Phraseology.WhichDaysShallThisTaskBePerformed;
+            expected.ShouldNotBeNull();
+
+            actual.ShouldBe(expected);
+
+            // Inform task day
+
+            await Tester.SendMessageAsync(new PlainText { Text =  select?.Options.First().Order.ToString() });
+
+            response = await Tester.ReceiveMessageAsync();
+            response.ShouldNotBeNull();
+
+            select = response.Content as Select;
+            actual = select?.Text;
+
+            expected = Settings.Phraseology.WhichTimeShallThisTaskBePerformed;
+            expected.ShouldNotBeNull();
+
+            actual.ShouldBe(expected);
+
+            // Inform task time
+
+            await Tester.SendMessageAsync(new PlainText { Text = select?.Options.First().Order.ToString() });
+
+            response = await Tester.ReceiveMessageAsync();
+            response.ShouldNotBeNull();
+
+            select = response.Content as Select;
+            actual = select?.Text;
+
+            actual.ShouldStartWith(taskName);
+
+            // Confirm the new task
+
+            await Tester.SendMessageAsync(select?.Options.First().Value);
+
+            response = await Tester.ReceiveMessageAsync();
+            response.ShouldNotBeNull();
+
+            document = response.Content as PlainText;
+            actual = document?.Text;
+
+            expected = Settings.Phraseology.TheTaskWasRegistered;
+            expected.ShouldNotBeNull();
+
+            actual.ShouldBe(expected);
         }
     }
 }

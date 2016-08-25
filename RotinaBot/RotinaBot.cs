@@ -16,16 +16,17 @@ namespace RotinaBot
 {
     public class RotinaBot
     {
-        private readonly IMessagingHubSender Sender;
+        private readonly IMessagingHubSender _sender;
         private readonly Scheduler _scheduler;
-        private readonly IBucketExtension Bucket;
-        public readonly Settings Settings;
+        private readonly IBucketExtension _bucket;
+
+        public Settings Settings { get; }
 
         public RotinaBot(IMessagingHubSender sender, IBucketExtension bucket, Scheduler scheduler, Settings settings)
         {
-            Sender = sender;
+            _sender = sender;
             _scheduler = scheduler;
-            Bucket = bucket;
+            _bucket = bucket;
             Settings = settings;
         }
 
@@ -33,7 +34,7 @@ namespace RotinaBot
         {
             try
             {
-                return await Bucket.GetAsync<Routine>(owner.ToIdentity().ToString(), cancellationToken) ??
+                return await _bucket.GetAsync<Routine>(owner.ToIdentity().ToString(), cancellationToken) ??
                        new Routine { Owner = owner };
             }
             catch
@@ -44,13 +45,13 @@ namespace RotinaBot
 
         private async Task SetRoutineAsync(Node owner, Routine routine, CancellationToken cancellationToken)
         {
-            await Bucket.SetAsync(owner.ToIdentity().ToString(), routine, TimeSpan.FromDays(36500), cancellationToken);
-            var proof = await Bucket.GetAsync<Routine>(owner.ToIdentity().ToString(), cancellationToken);
+            await _bucket.SetAsync(owner.ToIdentity().ToString(), routine, TimeSpan.FromDays(36500), cancellationToken);
+            var proof = await _bucket.GetAsync<Routine>(owner.ToIdentity().ToString(), cancellationToken);
             if (proof.Tasks.Length != routine.Tasks.Length)
                 throw new Exception();
         }
 
-        private RoutineTask[] SortRoutineTasks(IEnumerable<RoutineTask> tasks)
+        private static RoutineTask[] SortRoutineTasks(IEnumerable<RoutineTask> tasks)
         {
             return
                 tasks.OrderBy(t => t.Days.GetValueOrDefault())
@@ -71,7 +72,7 @@ namespace RotinaBot
 
         public async Task SendAtYourServiceMessageAsync(Node owner, CancellationToken cancellationToken)
         {
-            await Sender.SendMessageAsync(Settings.Phraseology.WheneverYouNeed, owner, cancellationToken);
+            await _sender.SendMessageAsync(Settings.Phraseology.WheneverYouNeed, owner, cancellationToken);
         }
 
         public async Task FinishTaskDeletionAsync(Node owner, CancellationToken cancellationToken)
@@ -83,7 +84,7 @@ namespace RotinaBot
 
         public async Task InformTheTaskWasRemovedAsync(Node owner, CancellationToken cancellationToken)
         {
-            await Sender.SendMessageAsync(Settings.Phraseology.TheTaskWasRemoved, owner, cancellationToken);
+            await _sender.SendMessageAsync(Settings.Phraseology.TheTaskWasRemoved, owner, cancellationToken);
         }
 
         public async Task FinishTaskCreationAsync(Node owner, CancellationToken cancellationToken)
@@ -97,7 +98,7 @@ namespace RotinaBot
 
         public async Task InformTheTaskWasCreatedAsync(Node owner, CancellationToken cancellationToken)
         {
-            await Sender.SendMessageAsync(Settings.Phraseology.TheTaskWasRegistered, owner, cancellationToken);
+            await _sender.SendMessageAsync(Settings.Phraseology.TheTaskWasRegistered, owner, cancellationToken);
         }
 
         public async Task<RoutineTask> PrepareTaskToBeDeletedAsync(Node owner, Document content, CancellationToken cancellationToken)
@@ -142,17 +143,17 @@ namespace RotinaBot
                             }
                         }
             };
-            await Sender.SendMessageAsync(select, owner, cancellationToken);
+            await _sender.SendMessageAsync(select, owner, cancellationToken);
         }
 
         public async Task InformTheTaskWasNotFoundAsync(Node owner, CancellationToken cancellationToken)
         {
-            await Sender.SendMessageAsync(Settings.Phraseology.TheTaskWasNotFound, owner, cancellationToken);
+            await _sender.SendMessageAsync(Settings.Phraseology.TheTaskWasNotFound, owner, cancellationToken);
         }
 
         public async Task InformAnOptionShallBeChosenAsync(Node owner, CancellationToken cancellationToken)
         {
-            await Sender.SendMessageAsync(Settings.Phraseology.SorryYouNeedToChooseAnOption, owner, cancellationToken);
+            await _sender.SendMessageAsync(Settings.Phraseology.SorryYouNeedToChooseAnOption, owner, cancellationToken);
         }
 
         public async Task SendInitialMenuAsync(Node owner, CancellationToken cancellationToken)
@@ -184,12 +185,12 @@ namespace RotinaBot
                     }
                 }
             };
-            await Sender.SendMessageAsync(select, owner, cancellationToken);
+            await _sender.SendMessageAsync(select, owner, cancellationToken);
         }
 
         public async Task RequestTaskNameAsync(Node owner, CancellationToken cancellationToken)
         {
-            await Sender.SendMessageAsync(Settings.Phraseology.WhatIsTheTaskName, owner, cancellationToken);
+            await _sender.SendMessageAsync(Settings.Phraseology.WhatIsTheTaskName, owner, cancellationToken);
         }
 
         public async Task<bool> SendNextTasksAsync(Node owner, Document content, CancellationToken cancellationToken)
@@ -238,7 +239,7 @@ namespace RotinaBot
                 Value = new PlainText { Text = Settings.Commands.Cancel }
             });
             select.Options = options.ToArray();
-            await Sender.SendMessageAsync(select, owner, cancellationToken);
+            await _sender.SendMessageAsync(select, owner, cancellationToken);
 
             return true;
         }
@@ -261,7 +262,7 @@ namespace RotinaBot
                                                         $"{task.Time.GetValueOrDefault().Name().ToLower()} " +
                                                         $"{task.Days.GetValueOrDefault().Name().ToLower()}."));
 
-            await Sender.SendMessageAsync(text.ToString(), owner, cancellationToken);
+            await _sender.SendMessageAsync(text.ToString(), owner, cancellationToken);
 
             return true;
         }
@@ -294,19 +295,19 @@ namespace RotinaBot
                 Value = new PlainText { Text = Settings.Commands.Cancel }
             });
             select.Options = options.ToArray();
-            await Sender.SendMessageAsync(select, owner, cancellationToken);
+            await _sender.SendMessageAsync(select, owner, cancellationToken);
 
             return true;
         }
 
         public async Task InformThereIsNoTaskRegisteredAsync(Node owner, CancellationToken cancellationToken)
         {
-            await Sender.SendMessageAsync(Settings.Phraseology.NoTask, owner, cancellationToken);
+            await _sender.SendMessageAsync(Settings.Phraseology.NoTask, owner, cancellationToken);
         }
 
         public async Task InformThereIsNoTaskForTodayAsync(Node owner, CancellationToken cancellationToken)
         {
-            await Sender.SendMessageAsync(Settings.Phraseology.NoTaskForToday, owner, cancellationToken);
+            await _sender.SendMessageAsync(Settings.Phraseology.NoTaskForToday, owner, cancellationToken);
         }
 
         public async Task<bool> SendTasksForTheDayAsync(Node owner, CancellationToken cancellationToken)
@@ -342,7 +343,7 @@ namespace RotinaBot
                 Value = new PlainText { Text = Settings.Commands.Cancel }
             });
             select.Options = options.ToArray();
-            await Sender.SendMessageAsync(select, owner, cancellationToken);
+            await _sender.SendMessageAsync(select, owner, cancellationToken);
 
             return true;
         }
@@ -357,11 +358,11 @@ namespace RotinaBot
             {
                 task.LastTime = DateTimeOffset.Now;
                 await SetRoutineAsync(owner, routine, cancellationToken);
-                await Sender.SendMessageAsync(Settings.Phraseology.KeepGoing, owner, cancellationToken);
+                await _sender.SendMessageAsync(Settings.Phraseology.KeepGoing, owner, cancellationToken);
             }
             else
             {
-                await Sender.SendMessageAsync(Settings.Phraseology.CallMeWhenYouFinishATask, owner, cancellationToken);
+                await _sender.SendMessageAsync(Settings.Phraseology.CallMeWhenYouFinishATask, owner, cancellationToken);
             }
         }
 
@@ -401,26 +402,22 @@ namespace RotinaBot
                         }
                     }
             };
-            await Sender.SendMessageAsync(select, owner, cancellationToken);
+            await _sender.SendMessageAsync(select, owner, cancellationToken);
         }
 
         public async Task SetNameForNewTaskAsync(Node owner, Document content, CancellationToken cancellationToken)
         {
             var taskName = ((PlainText)content).Text;
             var routine = await GetRoutineAsync(owner, cancellationToken);
-            var task = routine.Tasks?.FirstOrDefault(t => t.Name == taskName);
-            if (task == null)
+            routine.Tasks = routine.Tasks ?? new RoutineTask[0];
+            routine.Tasks = routine.Tasks.Concat(new[]
             {
-                routine.Tasks = routine.Tasks ?? new RoutineTask[0];
-                routine.Tasks = routine.Tasks.Concat(new[]
+                new RoutineTask
                 {
-                        new RoutineTask
-                        {
-                            Id = DateTime.Now.Ticks,
-                            Name = taskName
-                        }
-                    }).ToArray();
-            }
+                    Id = DateTime.Now.Ticks,
+                    Name = taskName
+                }
+            }).ToArray();
             await SetRoutineAsync(owner, routine, cancellationToken);
         }
 
@@ -448,7 +445,7 @@ namespace RotinaBot
                         }
                     }
             };
-            await Sender.SendMessageAsync(select, owner, cancellationToken);
+            await _sender.SendMessageAsync(select, owner, cancellationToken);
         }
 
         public async Task<RoutineTask> SetTimeForNewTaskAsync(Node owner, Document content, CancellationToken cancellationToken)
@@ -487,7 +484,7 @@ namespace RotinaBot
                         }
                     }
             };
-            await Sender.SendMessageAsync(select, owner, cancellationToken);
+            await _sender.SendMessageAsync(select, owner, cancellationToken);
         }
     }
 }

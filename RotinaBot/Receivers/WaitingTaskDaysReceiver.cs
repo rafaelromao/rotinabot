@@ -20,7 +20,7 @@ namespace RotinaBot.Receivers
                 await Bot.SendTaskTimeRequestAsync(message.From, cancellationToken);
                 StateManager.Instance.SetState(message.From, Bot.Settings.States.WaitingTaskTime);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 await Bot.InformAnOptionShallBeChosenAsync(message.From, cancellationToken);
             }
