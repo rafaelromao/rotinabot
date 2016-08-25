@@ -30,6 +30,8 @@ namespace RotinaBot
             Settings = settings;
         }
 
+        #region Generic
+
         private async Task<Routine> GetRoutineAsync(Node owner, CancellationToken cancellationToken)
         {
             try
@@ -75,16 +77,199 @@ namespace RotinaBot
             await _sender.SendMessageAsync(Settings.Phraseology.WheneverYouNeed, owner, cancellationToken);
         }
 
-        public async Task FinishTaskDeletionAsync(Node owner, CancellationToken cancellationToken)
+        public async Task InformAnOptionShallBeChosenAsync(Node owner, CancellationToken cancellationToken)
         {
+            await _sender.SendMessageAsync(Settings.Phraseology.SorryYouNeedToChooseAnOption, owner, cancellationToken);
+        }
+
+        public async Task SendInitialMenuAsync(Node owner, CancellationToken cancellationToken)
+        {
+            var select = new Select
+            {
+                Text = Settings.Phraseology.InitialMessage,
+                Options = new[]
+                {
+                    new SelectOption
+                    {
+                        Text = Settings.Phraseology.WhatIHaveForToday,
+                        Value = new PlainText { Text = Settings.Commands.Show }
+                    },
+                    new SelectOption
+                    {
+                        Text = Settings.Phraseology.WhatIHaveForTheWeek,
+                        Value = new PlainText { Text = Settings.Commands.ShowAll }
+                    },
+                    new SelectOption
+                    {
+                        Text = Settings.Phraseology.IncludeATaskInMyRoutine,
+                        Value = new PlainText { Text = Settings.Commands.New }
+                    },
+                    new SelectOption
+                    {
+                        Text = Settings.Phraseology.ExcludeATaskFromMyRoutine,
+                        Value = new PlainText { Text = Settings.Commands.Delete }
+                    }
+                }
+            };
+            await _sender.SendMessageAsync(select, owner, cancellationToken);
+        }
+
+        #endregion
+
+        #region New
+
+        public async Task MarkTaskAsCompletedAsync(Node owner, Document content, CancellationToken cancellationToken)
+        {
+            int taskId;
+            int.TryParse(((PlainText)content)?.Text, out taskId);
             var routine = await GetRoutineAsync(owner, cancellationToken);
-            routine.Tasks = routine.Tasks.Take(routine.Tasks.Length - 1).ToArray();
+            var task = routine.Tasks.FirstOrDefault(t => t.Id == taskId);
+            if (task != null)
+            {
+                task.LastTime = DateTimeOffset.Now;
+                await SetRoutineAsync(owner, routine, cancellationToken);
+                await _sender.SendMessageAsync(Settings.Phraseology.KeepGoing, owner, cancellationToken);
+            }
+            else
+            {
+                await _sender.SendMessageAsync(Settings.Phraseology.CallMeWhenYouFinishATask, owner, cancellationToken);
+            }
+        }
+
+        public async Task SetDaysForNewTaskAsync(Node owner, Document content, CancellationToken cancellationToken)
+        {
+            var daysText = ((PlainText)content)?.Text;
+            var daysValue = (RoutineTaskDaysValue)Enum.Parse(typeof(RoutineTaskDaysValue), daysText);
+            var taskDays = new RoutineTaskDays { Value = daysValue };
+
+            var routine = await GetRoutineAsync(owner, cancellationToken);
+            var task = routine.Tasks.Last();
+            task.Days = taskDays;
             await SetRoutineAsync(owner, routine, cancellationToken);
         }
 
-        public async Task InformTheTaskWasRemovedAsync(Node owner, CancellationToken cancellationToken)
+        public async Task SendTaskTimeRequestAsync(Node owner, CancellationToken cancellationToken)
         {
-            await _sender.SendMessageAsync(Settings.Phraseology.TheTaskWasRemoved, owner, cancellationToken);
+            var select = new Select
+            {
+                Text = Settings.Phraseology.WhichTimeShallThisTaskBePerformed,
+                Options = new[]
+                {
+                        new SelectOption
+                        {
+                            Text = RoutineTaskTimeValue.Morning.Name(),
+                            Order = (int)RoutineTaskTimeValue.Morning
+                        },
+                        new SelectOption
+                        {
+                            Text = RoutineTaskTimeValue.Afternoon.Name(),
+                            Order = (int)RoutineTaskTimeValue.Afternoon
+                        },
+                        new SelectOption
+                        {
+                            Text = RoutineTaskTimeValue.Evening.Name(),
+                            Order = (int)RoutineTaskTimeValue.Evening
+                        },
+                        new SelectOption
+                        {
+                            Text = Settings.Phraseology.Cancel,
+                            Value = new PlainText { Text = Settings.Commands.Cancel }
+                        }
+                    }
+            };
+            await _sender.SendMessageAsync(select, owner, cancellationToken);
+        }
+
+        public async Task SetNameForNewTaskAsync(Node owner, Document content, CancellationToken cancellationToken)
+        {
+            var taskName = ((PlainText)content).Text;
+            var routine = await GetRoutineAsync(owner, cancellationToken);
+            routine.Tasks = routine.Tasks ?? new RoutineTask[0];
+            routine.Tasks = routine.Tasks.Concat(new[]
+            {
+                new RoutineTask
+                {
+                    Id = DateTime.Now.Ticks,
+                    Name = taskName
+                }
+            }).ToArray();
+            await SetRoutineAsync(owner, routine, cancellationToken);
+        }
+
+        public async Task SendTaskDaysRequestAsync(Node owner, CancellationToken cancellationToken)
+        {
+            var select = new Select
+            {
+                Text = Settings.Phraseology.WhichDaysShallThisTaskBePerformed,
+                Options = new[]
+                {
+                        new SelectOption
+                        {
+                            Text = RoutineTaskDaysValue.EveryDay.Name(),
+                            Order = (int)RoutineTaskDaysValue.EveryDay
+                        },
+                        new SelectOption
+                        {
+                            Text = RoutineTaskDaysValue.WorkDays.Name(),
+                            Order = (int)RoutineTaskDaysValue.WorkDays
+                        },
+                        new SelectOption
+                        {
+                            Text = RoutineTaskDaysValue.WeekEnds.Name(),
+                            Order = (int)RoutineTaskDaysValue.WeekEnds
+                        },
+                        new SelectOption
+                        {
+                            Text = Settings.Phraseology.Cancel,
+                            Value = new PlainText { Text = Settings.Commands.Cancel }
+                        }
+                    }
+            };
+            await _sender.SendMessageAsync(select, owner, cancellationToken);
+        }
+
+        public async Task<RoutineTask> SetTimeForNewTaskAsync(Node owner, Document content, CancellationToken cancellationToken)
+        {
+            var timeText = ((PlainText)content)?.Text;
+            var timeValue = (RoutineTaskTimeValue)Enum.Parse(typeof(RoutineTaskDaysValue), timeText);
+            var taskTime = new RoutineTaskTime { Value = timeValue };
+
+            var routine = await GetRoutineAsync(owner, cancellationToken);
+            var task = routine.Tasks.Last();
+            task.Time = taskTime;
+            await SetRoutineAsync(owner, routine, cancellationToken);
+
+            return task;
+        }
+
+        public async Task SendTaskConfirmationRequestAsync(Node owner, RoutineTask task, CancellationToken cancellationToken)
+        {
+            var select = new Select
+            {
+                Text = $"{task.Name} " +
+                       $"{Settings.Phraseology.During} " +
+                       $"{task.Time.GetValueOrDefault().Name().ToLower()} " +
+                       $"{task.Days.GetValueOrDefault().Name().ToLower()}!",
+                Options = new[]
+                {
+                        new SelectOption
+                        {
+                            Text = Settings.Phraseology.Confirm,
+                            Value = new PlainText {Text = Settings.Commands.ConfirmNew}
+                        },
+                        new SelectOption
+                        {
+                            Text = Settings.Phraseology.Cancel,
+                            Value = new PlainText {Text = Settings.Phraseology.Cancel}
+                        }
+                    }
+            };
+            await _sender.SendMessageAsync(select, owner, cancellationToken);
+        }
+
+        public async Task RequestTaskNameAsync(Node owner, CancellationToken cancellationToken)
+        {
+            await _sender.SendMessageAsync(Settings.Phraseology.WhatIsTheTaskName, owner, cancellationToken);
         }
 
         public async Task FinishTaskCreationAsync(Node owner, CancellationToken cancellationToken)
@@ -100,6 +285,10 @@ namespace RotinaBot
         {
             await _sender.SendMessageAsync(Settings.Phraseology.TheTaskWasRegistered, owner, cancellationToken);
         }
+
+        #endregion
+
+        #region Delete
 
         public async Task<RoutineTask> PrepareTaskToBeDeletedAsync(Node owner, Document content, CancellationToken cancellationToken)
         {
@@ -120,6 +309,13 @@ namespace RotinaBot
             return null;
         }
 
+        public async Task FinishTaskDeletionAsync(Node owner, CancellationToken cancellationToken)
+        {
+            var routine = await GetRoutineAsync(owner, cancellationToken);
+            routine.Tasks = routine.Tasks.Take(routine.Tasks.Length - 1).ToArray();
+            await SetRoutineAsync(owner, routine, cancellationToken);
+        }
+
         public async Task SendDeleteConfirmationRequestAsync(Node owner, RoutineTask task, CancellationToken cancellationToken)
         {
             var select = new Select
@@ -134,7 +330,7 @@ namespace RotinaBot
                             new SelectOption
                             {
                                 Text = Settings.Phraseology.Confirm,
-                                Value = new PlainText {Text = Settings.Commands.ConfirmDeleteTask}
+                                Value = new PlainText {Text = Settings.Commands.ConfirmDelete}
                             },
                             new SelectOption
                             {
@@ -146,52 +342,19 @@ namespace RotinaBot
             await _sender.SendMessageAsync(select, owner, cancellationToken);
         }
 
+        public async Task InformTheTaskWasRemovedAsync(Node owner, CancellationToken cancellationToken)
+        {
+            await _sender.SendMessageAsync(Settings.Phraseology.TheTaskWasRemoved, owner, cancellationToken);
+        }
+
         public async Task InformTheTaskWasNotFoundAsync(Node owner, CancellationToken cancellationToken)
         {
             await _sender.SendMessageAsync(Settings.Phraseology.TheTaskWasNotFound, owner, cancellationToken);
         }
 
-        public async Task InformAnOptionShallBeChosenAsync(Node owner, CancellationToken cancellationToken)
-        {
-            await _sender.SendMessageAsync(Settings.Phraseology.SorryYouNeedToChooseAnOption, owner, cancellationToken);
-        }
+        #endregion
 
-        public async Task SendInitialMenuAsync(Node owner, CancellationToken cancellationToken)
-        {
-            var select = new Select
-            {
-                Text = Settings.Phraseology.InitialMessage,
-                Options = new[]
-                {
-                    new SelectOption
-                    {
-                        Text = Settings.Phraseology.WhatIHaveForToday,
-                        Value = new PlainText { Text = Settings.Commands.ShowMyRoutine }
-                    },
-                    new SelectOption
-                    {
-                        Text = Settings.Phraseology.WhatIHaveForTheWeek,
-                        Value = new PlainText { Text = Settings.Commands.ShowAllMyRoutine }
-                    },
-                    new SelectOption
-                    {
-                        Text = Settings.Phraseology.IncludeATaskInMyRoutine,
-                        Value = new PlainText { Text = Settings.Commands.NewTask }
-                    },
-                    new SelectOption
-                    {
-                        Text = Settings.Phraseology.ExcludeATaskFromMyRoutine,
-                        Value = new PlainText { Text = Settings.Commands.DeleteTask }
-                    }
-                }
-            };
-            await _sender.SendMessageAsync(select, owner, cancellationToken);
-        }
-
-        public async Task RequestTaskNameAsync(Node owner, CancellationToken cancellationToken)
-        {
-            await _sender.SendMessageAsync(Settings.Phraseology.WhatIsTheTaskName, owner, cancellationToken);
-        }
+        #region Show
 
         public async Task<bool> SendNextTasksAsync(Node owner, Document content, CancellationToken cancellationToken)
         {
@@ -348,143 +511,6 @@ namespace RotinaBot
             return true;
         }
 
-        public async Task MarkTaskAsCompletedAsync(Node owner, Document content, CancellationToken cancellationToken)
-        {
-            int taskId;
-            int.TryParse(((PlainText)content)?.Text, out taskId);
-            var routine = await GetRoutineAsync(owner, cancellationToken);
-            var task = routine.Tasks.FirstOrDefault(t => t.Id == taskId);
-            if (task != null)
-            {
-                task.LastTime = DateTimeOffset.Now;
-                await SetRoutineAsync(owner, routine, cancellationToken);
-                await _sender.SendMessageAsync(Settings.Phraseology.KeepGoing, owner, cancellationToken);
-            }
-            else
-            {
-                await _sender.SendMessageAsync(Settings.Phraseology.CallMeWhenYouFinishATask, owner, cancellationToken);
-            }
-        }
-
-        public async Task SetDaysForNewTaskAsync(Node owner, Document content, CancellationToken cancellationToken)
-        {
-            var daysText = ((PlainText)content)?.Text;
-            var daysValue = (RoutineTaskDaysValue)Enum.Parse(typeof(RoutineTaskDaysValue), daysText);
-            var taskDays = new RoutineTaskDays { Value = daysValue };
-
-            var routine = await GetRoutineAsync(owner, cancellationToken);
-            var task = routine.Tasks.Last();
-            task.Days = taskDays;
-            await SetRoutineAsync(owner, routine, cancellationToken);
-        }
-
-        public async Task SendTaskTimeRequestAsync(Node owner, CancellationToken cancellationToken)
-        {
-            var select = new Select
-            {
-                Text = Settings.Phraseology.WhichTimeShallThisTaskBePerformed,
-                Options = new[]
-                {
-                        new SelectOption
-                        {
-                            Text = RoutineTaskTimeValue.Morning.Name(),
-                            Order = (int)RoutineTaskTimeValue.Morning
-                        },
-                        new SelectOption
-                        {
-                            Text = RoutineTaskTimeValue.Afternoon.Name(),
-                            Order = (int)RoutineTaskTimeValue.Afternoon
-                        },
-                        new SelectOption
-                        {
-                            Text = RoutineTaskTimeValue.Evening.Name(),
-                            Order = (int)RoutineTaskTimeValue.Evening
-                        }
-                    }
-            };
-            await _sender.SendMessageAsync(select, owner, cancellationToken);
-        }
-
-        public async Task SetNameForNewTaskAsync(Node owner, Document content, CancellationToken cancellationToken)
-        {
-            var taskName = ((PlainText)content).Text;
-            var routine = await GetRoutineAsync(owner, cancellationToken);
-            routine.Tasks = routine.Tasks ?? new RoutineTask[0];
-            routine.Tasks = routine.Tasks.Concat(new[]
-            {
-                new RoutineTask
-                {
-                    Id = DateTime.Now.Ticks,
-                    Name = taskName
-                }
-            }).ToArray();
-            await SetRoutineAsync(owner, routine, cancellationToken);
-        }
-
-        public async Task SendTaskDaysRequestAsync(Node owner, CancellationToken cancellationToken)
-        {
-            var select = new Select
-            {
-                Text = Settings.Phraseology.WhichDaysShallThisTaskBePerformed,
-                Options = new[]
-                {
-                        new SelectOption
-                        {
-                            Text = RoutineTaskDaysValue.EveryDay.Name(),
-                            Order = (int)RoutineTaskDaysValue.EveryDay
-                        },
-                        new SelectOption
-                        {
-                            Text = RoutineTaskDaysValue.WorkDays.Name(),
-                            Order = (int)RoutineTaskDaysValue.WorkDays
-                        },
-                        new SelectOption
-                        {
-                            Text = RoutineTaskDaysValue.WeekEnds.Name(),
-                            Order = (int)RoutineTaskDaysValue.WeekEnds
-                        }
-                    }
-            };
-            await _sender.SendMessageAsync(select, owner, cancellationToken);
-        }
-
-        public async Task<RoutineTask> SetTimeForNewTaskAsync(Node owner, Document content, CancellationToken cancellationToken)
-        {
-            var timeText = ((PlainText)content)?.Text;
-            var timeValue = (RoutineTaskTimeValue)Enum.Parse(typeof(RoutineTaskDaysValue), timeText);
-            var taskTime = new RoutineTaskTime { Value = timeValue };
-
-            var routine = await GetRoutineAsync(owner, cancellationToken);
-            var task = routine.Tasks.Last();
-            task.Time = taskTime;
-            await SetRoutineAsync(owner, routine, cancellationToken);
-
-            return task;
-        }
-
-        public async Task SendTaskConfirmationRequestAsync(Node owner, RoutineTask task, CancellationToken cancellationToken)
-        {
-            var select = new Select
-            {
-                Text = $"{task.Name} " +
-                       $"{Settings.Phraseology.During} " +
-                       $"{task.Time.GetValueOrDefault().Name().ToLower()} " +
-                       $"{task.Days.GetValueOrDefault().Name().ToLower()}!",
-                Options = new[]
-                {
-                        new SelectOption
-                        {
-                            Text = Settings.Phraseology.Confirm,
-                            Value = new PlainText {Text = Settings.Commands.ConfirmNewTask}
-                        },
-                        new SelectOption
-                        {
-                            Text = Settings.Phraseology.Cancel,
-                            Value = new PlainText {Text = Settings.Phraseology.Cancel}
-                        }
-                    }
-            };
-            await _sender.SendMessageAsync(select, owner, cancellationToken);
-        }
+        #endregion
     }
 }

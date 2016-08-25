@@ -5,9 +5,9 @@ using Takenet.MessagingHub.Client;
 
 namespace RotinaBot.Receivers
 {
-    public class ShowAllTaskForDeletionRoutineReceiver : BaseMessageReceiver
+    public class ShowAllTaskForDeletionReceiver : BaseMessageReceiver
     {
-        public ShowAllTaskForDeletionRoutineReceiver(RotinaBot bot) : base(bot)
+        public ShowAllTaskForDeletionReceiver(RotinaBot bot) : base(bot)
         {
         }
 

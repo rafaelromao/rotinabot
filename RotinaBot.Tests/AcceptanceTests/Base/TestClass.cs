@@ -38,6 +38,7 @@ namespace RotinaBot.Tests.AcceptanceTests.Base
         protected void TestSetUp()
         {
             ((FakeBucketExtension)Tester.GetService<IBucketExtension>()).Clear();
+            Tester.IgnoreMessageAsync(TimeSpan.FromMilliseconds(100)).Wait();
         }
 
         [OneTimeTearDown]

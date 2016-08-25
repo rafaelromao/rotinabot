@@ -46,13 +46,13 @@ namespace RotinaBot
 
     public class Commands
     {
-        public string ShowMyRoutine { get; set; }
-        public string NewTask { get; set; }
-        public string ConfirmNewTask { get; set; }
+        public string Show { get; set; }
+        public string New { get; set; }
+        public string ConfirmNew { get; set; }
         public string Cancel { get; set; }
-        public string ShowAllMyRoutine { get; set; }
-        public string DeleteTask { get; set; }
-        public string ConfirmDeleteTask { get; set; }
+        public string ShowAll { get; set; }
+        public string Delete { get; set; }
+        public string ConfirmDelete { get; set; }
     }
 
     public class States

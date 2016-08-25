@@ -101,6 +101,29 @@ namespace RotinaBot.Tests.AcceptanceTests
             actual.ShouldBe(expected);
         }
 
+        private async Task ShowThereIsNothingForTheWeekAsync()
+        {
+            // Send messages to the bot
+            var select = await SendHiAsync();
+
+            var option = @select.Options.Single(o => o.Value.ToString() == Settings.Commands.ShowAll);
+            await Tester.SendMessageAsync(option.Value.ToString());
+
+            // Wait for the answer from the bot
+            var response = await Tester.ReceiveMessageAsync();
+            response.ShouldNotBeNull();
+
+            var document = response.Content as PlainText;
+            var actual = document?.Text;
+
+            // Get the expected response
+            var expected = Settings.Phraseology.NoTask;
+            expected.ShouldNotBeNull();
+
+            // Assert that the answer from the bot is the expected one
+            actual.ShouldBe(expected);
+        }
+
 
 
         [Test]
@@ -115,7 +138,7 @@ namespace RotinaBot.Tests.AcceptanceTests
             // Send messages to the bot
             var select = await SendHiAsync();
 
-            var option = select.Options.Single(o => o.Value.ToString() == Settings.Commands.ShowMyRoutine);
+            var option = select.Options.Single(o => o.Value.ToString() == Settings.Commands.Show);
             await Tester.SendMessageAsync(option.Value.ToString());
 
             // Wait for the answer from the bot
@@ -136,25 +159,7 @@ namespace RotinaBot.Tests.AcceptanceTests
         [Test]
         public async Task ShowThereIsNothingForTheWeek()
         {
-            // Send messages to the bot
-            var select = await SendHiAsync();
-
-            var option = select.Options.Single(o => o.Value.ToString() == Settings.Commands.ShowAllMyRoutine);
-            await Tester.SendMessageAsync(option.Value.ToString());
-
-            // Wait for the answer from the bot
-            var response = await Tester.ReceiveMessageAsync();
-            response.ShouldNotBeNull();
-
-            var document = response.Content as PlainText;
-            var actual = document?.Text;
-
-            // Get the expected response
-            var expected = Settings.Phraseology.NoTask;
-            expected.ShouldNotBeNull();
-
-            // Assert that the answer from the bot is the expected one
-            actual.ShouldBe(expected);
+            await ShowThereIsNothingForTheWeekAsync();
         }
 
         [Test]
@@ -163,7 +168,7 @@ namespace RotinaBot.Tests.AcceptanceTests
             // Send messages to the bot
             var select = await SendHiAsync();
 
-            var option = select.Options.Single(o => o.Value.ToString() == Settings.Commands.DeleteTask);
+            var option = select.Options.Single(o => o.Value.ToString() == Settings.Commands.Delete);
             await Tester.SendMessageAsync(option.Value.ToString());
 
             // Wait for the answer from the bot
@@ -188,7 +193,7 @@ namespace RotinaBot.Tests.AcceptanceTests
 
             var select = await SendHiAsync();
 
-            var option = select.Options.Single(o => o.Value.ToString() == Settings.Commands.NewTask);
+            var option = select.Options.Single(o => o.Value.ToString() == Settings.Commands.New);
             await Tester.SendMessageAsync(option.Value.ToString());
 
             var response = await Tester.ReceiveMessageAsync();
@@ -211,6 +216,75 @@ namespace RotinaBot.Tests.AcceptanceTests
         public async Task CreateANewTaskFromTaskName()
         {
             await CreateANewTaskFromTaskNameAsync("Nova tarefa");
+        }
+
+        [Test]
+        public async Task CheckANewTaskIsListed()
+        {
+            // Ensure there is no task already registered
+
+            await ShowThereIsNothingForTheWeekAsync();
+
+            // Create a new task
+
+            const string taskName = "Nova tarefa";
+
+            await CreateANewTaskFromTaskNameAsync(taskName);
+
+            // Request the bot to show the routine for the day
+
+            await Tester.SendMessageAsync(Settings.Commands.Show);
+
+            var response = await Tester.ReceiveMessageAsync();
+
+            var select = response.Content as Select;
+            select.ShouldNotBeNull();
+
+            select?.Options.Any(o => o.Text.StartsWith(taskName)).ShouldBeTrue();
+
+            // Request the bot to show the routine for the week
+
+            await Tester.SendMessageAsync(Settings.Commands.ShowAll);
+
+            response = await Tester.ReceiveMessageAsync();
+
+            var document = response.Content as PlainText;
+            document.ShouldNotBeNull();
+
+            document?.Text.Contains(taskName).ShouldBeTrue();
+        }
+
+        [Test]
+        public async Task CheckTwoNewTasksWithSameNameAreListed()
+        {
+            // Ensure there is no task already registered
+
+            await ShowThereIsNothingForTheWeekAsync();
+
+            // Create a new task
+
+            const string taskName = "Nova tarefa";
+
+            await CreateANewTaskFromTaskNameAsync(taskName);
+
+            // Create another new task
+
+            await CreateANewTaskFromTaskNameAsync(taskName);
+
+            // Request the bot to show the routine for the day
+
+            await Tester.SendMessageAsync(Settings.Commands.Show);
+
+            var response = await Tester.ReceiveMessageAsync();
+
+            var select = response.Content as Select;
+            select.ShouldNotBeNull();
+
+            select?.Options.Length.ShouldBe(3);
+
+            await Tester.SendMessageAsync(Settings.Commands.Cancel);
+
+            await Tester.IgnoreMessageAsync();
         }
     }
 }

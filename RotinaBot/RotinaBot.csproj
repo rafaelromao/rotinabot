@@ -89,7 +89,7 @@
     <Compile Include="Documents\RoutineTaskTime.cs" />
     <Compile Include="Receivers\Scheduler.cs" />
     <Compile Include="Receivers\ShowAllMyRoutineReceiver.cs" />
-    <Compile Include="Receivers\ShowAllTaskForDeletionRoutineReceiver.cs" />
+    <Compile Include="Receivers\ShowAllTaskForDeletionReceiver.cs" />
     <Compile Include="Receivers\DeleteTaskSelectionReceiver.cs" />
     <Compile Include="Receivers\ScheduleReminderReceiver.cs" />
     <Compile Include="Receivers\TaskSelectionReceiver.cs" />
