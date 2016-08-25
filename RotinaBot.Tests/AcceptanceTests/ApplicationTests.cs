@@ -2,6 +2,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Lime.Messaging.Contents;
+using Lime.Protocol;
 using Shouldly;
 using RotinaBot.Tests.AcceptanceTests.Base;
 using RotinaBot.Tests.AcceptanceTests.Mocks;
@@ -12,12 +13,6 @@ namespace RotinaBot.Tests.AcceptanceTests
     [TestFixture]
     public class ApplicationTests : TestClass<FakeServiceProvider>
     {
-        [Test]
-        public async Task SendHi()
-        {
-            await SendHiAsync();
-        }
-
         private async Task<Select> SendHiAsync()
         {
             // Send message to the bot
@@ -38,6 +33,80 @@ namespace RotinaBot.Tests.AcceptanceTests
             actual.ShouldBe(expected);
 
             return document;
+        }
+
+        private async Task CreateANewTaskFromTaskNameAsync(string taskName)
+        {
+            Message response;
+            Select select;
+            string actual;
+            string expected;
+            PlainText document;
+
+            // Inform task name
+
+            await Tester.SendMessageAsync(taskName);
+
+            response = await Tester.ReceiveMessageAsync();
+            response.ShouldNotBeNull();
+
+            select = response.Content as Select;
+            actual = select?.Text;
+
+            expected = Settings.Phraseology.WhichDaysShallThisTaskBePerformed;
+            expected.ShouldNotBeNull();
+
+            actual.ShouldBe(expected);
+
+            // Inform task day
+
+            await Tester.SendMessageAsync(new PlainText { Text = select?.Options.First().Order.ToString() });
+
+            response = await Tester.ReceiveMessageAsync();
+            response.ShouldNotBeNull();
+
+            select = response.Content as Select;
+            actual = select?.Text;
+
+            expected = Settings.Phraseology.WhichTimeShallThisTaskBePerformed;
+            expected.ShouldNotBeNull();
+
+            actual.ShouldBe(expected);
+
+            // Inform task time
+
+            await Tester.SendMessageAsync(new PlainText { Text = select?.Options.First().Order.ToString() });
+
+            response = await Tester.ReceiveMessageAsync();
+            response.ShouldNotBeNull();
+
+            select = response.Content as Select;
+            actual = select?.Text;
+
+            actual.ShouldStartWith(taskName);
+
+            // Confirm the new task
+
+            await Tester.SendMessageAsync(select?.Options.First().Value);
+
+            response = await Tester.ReceiveMessageAsync();
+            response.ShouldNotBeNull();
+
+            document = response.Content as PlainText;
+            actual = document?.Text;
+
+            expected = Settings.Phraseology.TheTaskWasRegistered;
+            expected.ShouldNotBeNull();
+
+            actual.ShouldBe(expected);
+        }
+
+
+
+        [Test]
+        public async Task SendHi()
+        {
+            await SendHiAsync();
         }
 
         [Test]
@@ -135,64 +204,13 @@ namespace RotinaBot.Tests.AcceptanceTests
 
             actual.ShouldBe(expected);
 
-            // Inform task name
+            await CreateANewTaskFromTaskNameAsync("Nova tarefa");
+        }
 
-            const string taskName = "Nova tarefa";
-
-            await Tester.SendMessageAsync(taskName);
-
-            response = await Tester.ReceiveMessageAsync();
-            response.ShouldNotBeNull();
-
-            select = response.Content as Select;
-            actual = select?.Text;
-
-            expected = Settings.Phraseology.WhichDaysShallThisTaskBePerformed;
-            expected.ShouldNotBeNull();
-
-            actual.ShouldBe(expected);
-
-            // Inform task day
-
-            await Tester.SendMessageAsync(new PlainText { Text =  select?.Options.First().Order.ToString() });
-
-            response = await Tester.ReceiveMessageAsync();
-            response.ShouldNotBeNull();
-
-            select = response.Content as Select;
-            actual = select?.Text;
-
-            expected = Settings.Phraseology.WhichTimeShallThisTaskBePerformed;
-            expected.ShouldNotBeNull();
-
-            actual.ShouldBe(expected);
-
-            // Inform task time
-
-            await Tester.SendMessageAsync(new PlainText { Text = select?.Options.First().Order.ToString() });
-
-            response = await Tester.ReceiveMessageAsync();
-            response.ShouldNotBeNull();
-
-            select = response.Content as Select;
-            actual = select?.Text;
-
-            actual.ShouldStartWith(taskName);
-
-            // Confirm the new task
-
-            await Tester.SendMessageAsync(select?.Options.First().Value);
-
-            response = await Tester.ReceiveMessageAsync();
-            response.ShouldNotBeNull();
-
-            document = response.Content as PlainText;
-            actual = document?.Text;
-
-            expected = Settings.Phraseology.TheTaskWasRegistered;
-            expected.ShouldNotBeNull();
-
-            actual.ShouldBe(expected);
+        [Test]
+        public async Task CreateANewTaskFromTaskName()
+        {
+            await CreateANewTaskFromTaskNameAsync("Nova tarefa");
         }
     }
 }
