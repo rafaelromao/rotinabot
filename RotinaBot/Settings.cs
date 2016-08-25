@@ -37,6 +37,11 @@ namespace RotinaBot
         public string HereAreYourTasksForTheWeek { get; set; }
         public string ChooseATaskToBeDeleted { get; set; }
         public string HereAreYouTasksForToday { get; set; }
+        public string KeepGoing { get; set; }
+        public string CallMeWhenYouFinishATask { get; set; }
+        public string WhichTimeShallThisTaskBePerformed { get; set; }
+        public string WhichDaysShallThisTaskBePerformed { get; set; }
+        public string SorryYouNeedToInformTheTaskName { get; set; }
     }
 
     public class Commands
@@ -56,5 +61,8 @@ namespace RotinaBot
         public string WaitingDeleteTaskConfirmation { get; set; }
         public string WaitingTaskSelection { get; set; }
         public string WaitingDeleteTaskSelection { get; set; }
+        public string WaitingTaskTime { get; set; }
+        public string WaitingTaskDays { get; set; }
+        public string WaitingTaskConfirmation { get; set; }
     }
 }

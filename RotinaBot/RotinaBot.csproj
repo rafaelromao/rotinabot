@@ -93,6 +93,7 @@
     <Compile Include="Receivers\DeleteTaskSelectionReceiver.cs" />
     <Compile Include="Receivers\ScheduleReminderReceiver.cs" />
     <Compile Include="Receivers\TaskSelectionReceiver.cs" />
+    <Compile Include="RotinaBot.cs" />
     <Compile Include="ServiceProvider.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="Startup.cs" />

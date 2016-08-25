@@ -42,13 +42,13 @@ namespace RotinaBot.Tests.AcceptanceTests
         [Test]
         public async Task ShowThereIsNothingForToday()
         {
-            var select = await SendHiAsync();
-
             // Get the expected response
             var expected = Settings.Phraseology.NoTaskForToday;
             expected.ShouldNotBeNull();
 
-            // Send message to the bot
+            // Send messages to the bot
+            var select = await SendHiAsync();
+
             var option = select.Options.Single(o => o.Value.ToString() == Settings.Commands.ShowMyRoutine);
             await Tester.SendMessageAsync(option.Value.ToString());
 
@@ -61,6 +61,82 @@ namespace RotinaBot.Tests.AcceptanceTests
 
             // Assert that the answer from the bot is the expected one
             actual.ShouldBe(expected);
+        }
+
+        [Test]
+        public async Task ShowThereIsNothingForTheWeek()
+        {
+            // Get the expected response
+            var expected = Settings.Phraseology.NoTask;
+            expected.ShouldNotBeNull();
+
+            // Send messages to the bot
+            var select = await SendHiAsync();
+
+            var option = select.Options.Single(o => o.Value.ToString() == Settings.Commands.ShowAllMyRoutine);
+            await Tester.SendMessageAsync(option.Value.ToString());
+
+            // Wait for the answer from the bot
+            var response = await Tester.ReceiveMessageAsync();
+            response.ShouldNotBeNull();
+
+            var document = response.Content as PlainText;
+            var actual = document?.Text;
+
+            // Assert that the answer from the bot is the expected one
+            actual.ShouldBe(expected);
+        }
+
+        [Test]
+        public async Task ShowThereIsNothingForDeletion()
+        {
+            // Get the expected response
+            var expected = Settings.Phraseology.NoTask;
+            expected.ShouldNotBeNull();
+
+            // Send messages to the bot
+            var select = await SendHiAsync();
+
+            var option = select.Options.Single(o => o.Value.ToString() == Settings.Commands.DeleteTask);
+            await Tester.SendMessageAsync(option.Value.ToString());
+
+            // Wait for the answer from the bot
+            var response = await Tester.ReceiveMessageAsync();
+            response.ShouldNotBeNull();
+
+            var document = response.Content as PlainText;
+            var actual = document?.Text;
+
+            // Assert that the answer from the bot is the expected one
+            actual.ShouldBe(expected);
+        }
+
+        [Test]
+        public async Task CreateANewTaskFromMenu()
+        {
+            // Get the expected response
+            var expected = Settings.Phraseology.WhatIsTheTaskName;
+            expected.ShouldNotBeNull();
+
+            // Send messages to the bot
+            var select = await SendHiAsync();
+
+            var option = select.Options.Single(o => o.Value.ToString() == Settings.Commands.NewTask);
+            await Tester.SendMessageAsync(option.Value.ToString());
+
+            // Wait for the answer from the bot
+            var response = await Tester.ReceiveMessageAsync();
+            response.ShouldNotBeNull();
+
+            var document = response.Content as PlainText;
+            var actual = document?.Text;
+
+            // Assert that the answer from the bot is the expected one
+            actual.ShouldBe(expected);
+
+
+
+
         }
     }
 }

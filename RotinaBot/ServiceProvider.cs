@@ -21,6 +21,7 @@ namespace RotinaBot
             Container.Options.AllowOverridingRegistrations = true;
 
             Container.RegisterSingleton<Scheduler>();
+            Container.RegisterSingleton<RotinaBot>();
 
             BeforeGetFirstService += delegate { };
         }
