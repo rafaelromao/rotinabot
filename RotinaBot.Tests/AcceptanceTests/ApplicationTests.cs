@@ -1,19 +1,20 @@
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Lime.Messaging.Contents;
 using Lime.Protocol;
 using Shouldly;
-using RotinaBot.Tests.AcceptanceTests.Base;
 using RotinaBot.Tests.AcceptanceTests.Mocks;
 using NUnit.Framework;
 using RotinaBot.Documents;
+using Takenet.MessagingHub.Client.Tester;
 
 namespace RotinaBot.Tests.AcceptanceTests
 {
-    [TestFixture]
-    public class ApplicationTests : TestClass<FakeServiceProvider>
+    public class BaseTestFixture<TServiceProvider> : Base.TestClass<TServiceProvider>
+        where TServiceProvider : ApplicationTesterServiceProvider
     {
-        private async Task<Select> SendHiAsync()
+        protected async Task<Select> SendHiAsync()
         {
             // Send message to the bot
             await Tester.SendMessageAsync("Oi");
@@ -35,29 +36,23 @@ namespace RotinaBot.Tests.AcceptanceTests
             return document;
         }
 
-        private async Task CreateANewTaskFromTaskNameAsync(
-            string taskName, 
-            RoutineTaskDaysValue days = RoutineTaskDaysValue.EveryDay, 
-            RoutineTaskTimeValue time = RoutineTaskTimeValue.Morning, 
+        protected async Task CreateANewTaskFromTaskNameAsync(
+            string taskName,
+            RoutineTaskDaysValue days = RoutineTaskDaysValue.EveryDay,
+            RoutineTaskTimeValue time = RoutineTaskTimeValue.Morning,
             bool cancel = false)
         {
-            Message response;
-            Select select;
-            string actual;
-            string expected;
-            PlainText document;
-
             // Inform task name
 
             await Tester.SendMessageAsync(taskName);
 
-            response = await Tester.ReceiveMessageAsync();
+            var response = await Tester.ReceiveMessageAsync();
             response.ShouldNotBeNull();
 
-            select = response.Content as Select;
-            actual = select?.Text;
+            var select = response.Content as Select;
+            var actual = select?.Text;
 
-            expected = Settings.Phraseology.WhichDaysShallThisTaskBePerformed;
+            var expected = Settings.Phraseology.WhichDaysShallThisTaskBePerformed;
             expected.ShouldNotBeNull();
 
             actual.ShouldBe(expected);
@@ -91,12 +86,12 @@ namespace RotinaBot.Tests.AcceptanceTests
 
             // Confirm the new task
 
-            await Tester.SendMessageAsync(cancel ? Settings.Commands.Cancel : Settings.Commands.ConfirmNew );
+            await Tester.SendMessageAsync(cancel ? Settings.Commands.Cancel : Settings.Commands.ConfirmNew);
 
             response = await Tester.ReceiveMessageAsync();
             response.ShouldNotBeNull();
 
-            document = response.Content as PlainText;
+            var document = response.Content as PlainText;
             actual = document?.Text;
 
             expected = cancel ? Settings.Phraseology.WheneverYouNeed : Settings.Phraseology.TheTaskWasRegistered;
@@ -106,7 +101,7 @@ namespace RotinaBot.Tests.AcceptanceTests
             actual.ShouldBe(expected);
         }
 
-        private async Task ShowThereIsNothingForTheWeekAsync()
+        protected async Task ShowThereIsNothingForTheWeekAsync()
         {
             // Send messages to the bot
             var select = await SendHiAsync();
@@ -128,9 +123,11 @@ namespace RotinaBot.Tests.AcceptanceTests
             // Assert that the answer from the bot is the expected one
             actual.ShouldBe(expected);
         }
+    }
 
-
-
+    [TestFixture]
+    public class TestApplicationWithFakeBucket : BaseTestFixture<FakeServiceProviderWithFakeBucket>
+    {
         [Test]
         public async Task SendHi()
         {
@@ -468,6 +465,36 @@ namespace RotinaBot.Tests.AcceptanceTests
 
             await ShowThereIsNothingForTheWeekAsync();
         }
+    }
 
+    [TestFixture]
+    public class TestApplicationWithFakeBucketAndScheduler : BaseTestFixture<FakeServiceProviderWithFakeBucketAndScheduler>
+    {
+        [Test]
+        public async Task InsertATaskAndCheckIfTheScheduledRemiderIsSent()
+        {
+            // Ensure there is no task already registered
+
+            await ShowThereIsNothingForTheWeekAsync();
+
+            // Create a new task
+
+            const string taskName = "Nova tarefa";
+
+            var hour = DateTime.Now.Hour;
+            var time = hour > 18
+                ? RoutineTaskTimeValue.Evening
+                : (hour > 12 ? RoutineTaskTimeValue.Afternoon : RoutineTaskTimeValue.Morning);
+            await CreateANewTaskFromTaskNameAsync(taskName, time: time);
+
+            // The bot should show the next tasks
+
+            var response = await Tester.ReceiveMessageAsync();
+
+            var select = response.Content as Select;
+            select.ShouldNotBeNull();
+
+            select.Text.ShouldBe(Settings.Phraseology.HereAreYourNextTasks);
+        }
     }
 }

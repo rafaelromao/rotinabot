@@ -371,7 +371,7 @@ namespace RotinaBot
 
             var select = new Select
             {
-                Text = Settings.Phraseology.HereAreYourNextTask
+                Text = Settings.Phraseology.HereAreYourNextTasks
             };
             var options = todaysTasks.Select(task => new SelectOption
             {
@@ -401,15 +401,34 @@ namespace RotinaBot
 
             var text = new StringBuilder();
             text.AppendLine(Settings.Phraseology.HereAreYourTasksForTheWeek);
-            text.AppendLine();
-            todaysTasks.ForEach(task => text.AppendLine($"- {task.Name} " +
-                                                        $"{Settings.Phraseology.During} " +
-                                                        $"{task.Time.GetValueOrDefault().Name().ToLower()} " +
-                                                        $"{task.Days.GetValueOrDefault().Name().ToLower()}."));
+
+            PrintTasksForDaysAndTime(text, RoutineTaskDaysValue.WorkDays, RoutineTaskTimeValue.Morning, todaysTasks);
+            PrintTasksForDaysAndTime(text, RoutineTaskDaysValue.WorkDays, RoutineTaskTimeValue.Afternoon, todaysTasks);
+            PrintTasksForDaysAndTime(text, RoutineTaskDaysValue.WorkDays, RoutineTaskTimeValue.Evening, todaysTasks);
+
+            PrintTasksForDaysAndTime(text, RoutineTaskDaysValue.WeekEnds, RoutineTaskTimeValue.Morning, todaysTasks);
+            PrintTasksForDaysAndTime(text, RoutineTaskDaysValue.WeekEnds, RoutineTaskTimeValue.Afternoon, todaysTasks);
+            PrintTasksForDaysAndTime(text, RoutineTaskDaysValue.WeekEnds, RoutineTaskTimeValue.Evening, todaysTasks);
+
+            PrintTasksForDaysAndTime(text, RoutineTaskDaysValue.EveryDay, RoutineTaskTimeValue.Morning, todaysTasks);
+            PrintTasksForDaysAndTime(text, RoutineTaskDaysValue.EveryDay, RoutineTaskTimeValue.Afternoon, todaysTasks);
+            PrintTasksForDaysAndTime(text, RoutineTaskDaysValue.EveryDay, RoutineTaskTimeValue.Evening, todaysTasks);
 
             await _sender.SendMessageAsync(text.ToString(), owner, cancellationToken);
 
             return true;
+        }
+
+        private void PrintTasksForDaysAndTime(StringBuilder text, RoutineTaskDaysValue days, RoutineTaskTimeValue time,
+            RoutineTask[] todaysTasks)
+        {
+            text.AppendLine();
+            text.AppendLine($"{days.Name()} {Settings.Phraseology.During} {time.Name()}:");
+            todaysTasks.Where(
+                task => task.Days.GetValueOrDefault() == days && task.Time.GetValueOrDefault() == time
+                ).ForEach(
+                    task => text.AppendLine($"- {task.Name} .")
+                );
         }
 
         public async Task<bool> SendTasksThatCanBeDeletedAsync(Node owner, CancellationToken cancellationToken)

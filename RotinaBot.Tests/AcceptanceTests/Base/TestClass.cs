@@ -34,8 +34,8 @@ namespace RotinaBot.Tests.AcceptanceTests.Base
             Settings = Tester.GetService<Settings>();
         }
 
-        [SetUp]
-        protected void TestSetUp()
+        [TearDown]
+        protected void CleanUp()
         {
             ((FakeBucketExtension)Tester.GetService<IBucketExtension>()).Clear();
             Tester.IgnoreMessageAsync(TimeSpan.FromMilliseconds(100)).Wait();

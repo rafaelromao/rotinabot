@@ -13,9 +13,10 @@ namespace RotinaBot.Receivers
 
         public override async Task ReceiveAsync(Message message, CancellationToken cancellationToken)
         {
-            if (await Bot.SendNextTasksAsync(message.From, message.Content, cancellationToken))
+            var owner = ((IdentityDocument) message.Content).Value.ToNode();
+            if (await Bot.SendNextTasksAsync(owner, message.Content, cancellationToken))
             {
-                StateManager.Instance.SetState(message.From, Bot.Settings.States.WaitingTaskSelection);
+                StateManager.Instance.SetState(owner, Bot.Settings.States.WaitingTaskSelection);
             }
         }
     }

@@ -32,7 +32,7 @@ namespace RotinaBot
         public string TheTaskWasNotFound { get; set; }
         public string SorryYouNeedToChooseAnOption { get; set; }
         public string WhatIsTheTaskName { get; set; }
-        public string HereAreYourNextTask { get; set; }
+        public string HereAreYourNextTasks { get; set; }
         public string NoTask { get; set; }
         public string HereAreYourTasksForTheWeek { get; set; }
         public string ChooseATaskToBeDeleted { get; set; }
