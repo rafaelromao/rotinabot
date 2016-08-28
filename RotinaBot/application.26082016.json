@@ -10,7 +10,7 @@
     {
       "type": "NewTaskReceiver",
       "mediaType": "text/plain",
-      "content": "(/newtask)"
+      "content": "^(\/new)$"
     },
     {
       "type": "WaitingTaskNameReceiver",
@@ -32,37 +32,37 @@
     {
       "type": "ConfirmNewTaskReceiver",
       "mediaType": "text/plain",
-      "content": "(/confirmnewtask)",
+      "content": "^(\/confirmNew)$",
       "state": "waitingTaskConfirmation",
       "outState": "default"
     },
     {
       "type": "ShowTodaysRoutineReceiver",
       "mediaType": "text/plain",
-      "content": "(/showmyroutine)"
+      "content": "^(\/show)$"
     },
     {
       "type": "ShowAllMyRoutineReceiver",
       "mediaType": "text/plain",
-      "content": "(/showallmyroutine)",
+      "content": "^(\/showAll)$",
       "outState": "default"
     },
     {
-      "type": "ShowAllTaskForDeletionRoutineReceiver",
+      "type": "ShowAllTaskForDeletionReceiver",
       "mediaType": "text/plain",
-      "content": "(/deletetask)"
+      "content": "^(\/delete)$"
     },
     {
       "type": "ConfirmDeleteTaskReceiver",
       "mediaType": "text/plain",
-      "content": "(/confirmdeletetask)",
+      "content": "^(\/confirmDelete)$",
       "state": "waitingDeleteTaskConfirmation",
       "outState": "default"
     },
     {
       "type": "CancelReceiver",
       "mediaType": "text/plain",
-      "content": "(/cancel)",
+      "content": "^(\/cancel)$",
       "outState": "default"
     },
     {
@@ -94,32 +94,39 @@
       "TheTaskWasRemoved": "Concluído! A tarefa foi removida da sua rotina!",
       "TheTaskWasRegistered": "Parabéns! Essa tarefa foi incluída em sua rotina!",
       "ConfirmDelete": "Confirma a exclusão da tarefa",
-      "During": "durante a",
+      "During": "de",
       "Confirm": "Confirmar",
-      "Cancel": "Cancel",
-      "TheTaskWasNotFound": "A tarefa não foi encontrada para se excluída!",
+      "Cancel": "Cancelar",
+      "TheTaskWasNotFound": "A tarefa não foi encontrada!",
       "SorryYouNeedToChooseAnOption": "Desculpe, por favor responda com uma das opções apresentadas!",
       "WhatIsTheTaskName": "Certo! Qual o nome dessa nova tarefa?",
       "HereAreYourNextTasks": "Olá! Aqui estão as próximas tarefas da sua rotina:",
       "NoTask": "Não há nenhuma tarefa registrada!",
       "HereAreYourTasksForTheWeek": "Abaixo está a lista de tarefas registradas para a semana:",
       "ChooseATaskToBeDeleted": "Escolha a tarefa a ser excluída:",
-      "HereAreYouTasksForToday": "Abaixo está a lista de tarefas pendentes para hoje:"
+      "HereAreYouTasksForToday": "Abaixo está a lista de tarefas pendentes para hoje:",
+      "KeepGoing": "Parabéns! Continue cumprindo as tarefas da sua rotina!",
+      "WhichTimeShallThisTaskBePerformed": "E em que dias da semana essa tarefa deve ser realizada?",
+      "WhichDaysShallThisTaskBePerformed": "E qual o melhor momento do dia para esta tarefa?",
+      "SorryICannotHelpYouRightNow": "Desculpe, não poderei te ajudar no momento!"
     },
     "commands": {
-      "showMyRoutine": "/showmyroutine",
-      "newtask": "/newtask",
-      "confirmnewtask": "/confirmnewtask",
+      "show": "/show",
+      "new": "/new",
+      "confirmnew": "/confirmNew",
       "cancel": "/cancel",
-      "showallmyroutine": "/showallmyroutine",
-      "deletetask": "/deletetask",
-      "confirmdeletetask": "/confirmdeletetask"
+      "showall": "/showAll",
+      "delete": "/delete",
+      "confirmdelete": "/confirmDelete"
     },
     "states": {
       "default": "default",
       "waitingDeleteTaskConfirmation": "waitingDeleteTaskConfirmation",
       "waitingTaskSelection": "waitingTaskSelection",
-      "waitingDeleteTaskSelection": "waitingDeleteTaskSelection"
+      "waitingDeleteTaskSelection": "waitingDeleteTaskSelection",
+      "waitingTaskTime": "waitingTaskTime",
+      "waitingTaskDays": "waitingTaskDays",
+      "waitingTaskConfirmation": "waitingTaskConfirmation"
     } 
   },
   "settingsType": "Settings",
