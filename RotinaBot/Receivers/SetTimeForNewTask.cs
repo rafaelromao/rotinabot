@@ -6,9 +6,9 @@ using Takenet.MessagingHub.Client;
 
 namespace RotinaBot.Receivers
 {
-    public class WaitingTaskTimeReceiver : BaseMessageReceiver
+    public class SetTimeForNewTask : BaseMessageReceiver
     {
-        public WaitingTaskTimeReceiver(RotinaBot bot) : base(bot)
+        public SetTimeForNewTask(RotinaBot bot) : base(bot)
         {
         }
 

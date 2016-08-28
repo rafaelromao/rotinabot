@@ -4,9 +4,9 @@ using Lime.Protocol;
 
 namespace RotinaBot.Receivers
 {
-    public class InitialInteractionReceiver : BaseMessageReceiver
+    public class SendInitialMenu : BaseMessageReceiver
     {
-        public InitialInteractionReceiver(RotinaBot bot) : base(bot) { }
+        public SendInitialMenu(RotinaBot bot) : base(bot) { }
 
         public override async Task ReceiveAsync(Message message, CancellationToken cancellationToken)
         {

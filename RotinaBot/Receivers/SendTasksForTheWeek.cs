@@ -4,9 +4,9 @@ using Lime.Protocol;
 
 namespace RotinaBot.Receivers
 {
-    public class ShowAllMyRoutineReceiver : BaseMessageReceiver
+    public class SendTasksForTheWeek : BaseMessageReceiver
     {
-        public ShowAllMyRoutineReceiver(RotinaBot bot) : base(bot)
+        public SendTasksForTheWeek(RotinaBot bot) : base(bot)
         {
         }
 

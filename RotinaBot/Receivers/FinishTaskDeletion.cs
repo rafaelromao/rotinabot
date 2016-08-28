@@ -4,9 +4,9 @@ using Lime.Protocol;
 
 namespace RotinaBot.Receivers
 {
-    public class ConfirmDeleteTaskReceiver : BaseMessageReceiver
+    public class FinishTaskDeletion : BaseMessageReceiver
     {
-        public ConfirmDeleteTaskReceiver(RotinaBot bot) : base(bot)
+        public FinishTaskDeletion(RotinaBot bot) : base(bot)
         {
         }
 

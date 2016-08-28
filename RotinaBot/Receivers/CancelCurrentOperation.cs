@@ -4,9 +4,9 @@ using Lime.Protocol;
 
 namespace RotinaBot.Receivers
 {
-    public class CancelReceiver : BaseMessageReceiver
+    public class CancelCurrentOperation : BaseMessageReceiver
     {
-        public CancelReceiver(RotinaBot bot) : base(bot)
+        public CancelCurrentOperation(RotinaBot bot) : base(bot)
         {
         }
 

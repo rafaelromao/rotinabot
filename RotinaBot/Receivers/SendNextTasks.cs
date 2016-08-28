@@ -5,9 +5,9 @@ using Takenet.MessagingHub.Client;
 
 namespace RotinaBot.Receivers
 {
-    public class ScheduleReminderReceiver : BaseMessageReceiver
+    public class SendNextTasks : BaseMessageReceiver
     {
-        public ScheduleReminderReceiver(RotinaBot bot) : base(bot)
+        public SendNextTasks(RotinaBot bot) : base(bot)
         {
         }
 

@@ -5,21 +5,21 @@ using Takenet.MessagingHub.Client;
 
 namespace RotinaBot.Receivers
 {
-    public class ShowTodaysRoutineReceiver : BaseMessageReceiver
+    public class SendTasksThatCanBeDeleted : BaseMessageReceiver
     {
-        public ShowTodaysRoutineReceiver(RotinaBot bot) : base(bot)
+        public SendTasksThatCanBeDeleted(RotinaBot bot) : base(bot)
         {
         }
 
         public override async Task ReceiveAsync(Message message, CancellationToken cancellationToken)
         {
-            if (await Bot.SendTasksForTheDayAsync(message.From, cancellationToken))
+            if (await Bot.SendTasksThatCanBeDeletedAsync(message.From, cancellationToken))
             {
-                StateManager.Instance.SetState(message.From, Bot.Settings.States.WaitingTaskSelection);
+                StateManager.Instance.SetState(message.From, Bot.Settings.States.WaitingDeleteTaskSelection);
             }
             else
             {
-                await Bot.InformThereIsNoTaskForTodayAsync(message.From, cancellationToken);
+                await Bot.InformThereIsNoTaskRegisteredAsync(message.From, cancellationToken);
                 StateManager.Instance.SetState(message.From, Bot.Settings.States.Default);
             }
         }

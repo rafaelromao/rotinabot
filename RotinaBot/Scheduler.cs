@@ -8,7 +8,7 @@ using Takenet.MessagingHub.Client.Extensions.Delegation;
 using Takenet.MessagingHub.Client.Extensions.Scheduler;
 using Takenet.MessagingHub.Client.Host;
 
-namespace RotinaBot.Receivers
+namespace RotinaBot
 {
     public class Scheduler
     {

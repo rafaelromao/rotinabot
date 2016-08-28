@@ -4,9 +4,9 @@ using Lime.Protocol;
 
 namespace RotinaBot.Receivers
 {
-    public class NewTaskReceiver : BaseMessageReceiver
+    public class RequestTaskName : BaseMessageReceiver
     {
-        public NewTaskReceiver(RotinaBot bot) : base(bot)
+        public RequestTaskName(RotinaBot bot) : base(bot)
         {
         }
 

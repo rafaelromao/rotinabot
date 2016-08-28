@@ -6,9 +6,9 @@ using Takenet.MessagingHub.Client;
 
 namespace RotinaBot.Receivers
 {
-    public class DeleteTaskSelectionReceiver : BaseMessageReceiver
+    public class MarkTaskAsCompleted : BaseMessageReceiver
     {
-        public DeleteTaskSelectionReceiver(RotinaBot bot) : base(bot)
+        public MarkTaskAsCompleted(RotinaBot bot) : base(bot)
         {
         }
 
@@ -16,16 +16,14 @@ namespace RotinaBot.Receivers
         {
             try
             {
-                var task = await Bot.PrepareTaskToBeDeletedAsync(message.From, message.Content, cancellationToken);
-                if (task != null)
+                if (await Bot.MarkTaskAsCompletedAsync(message.From, message.Content, cancellationToken))
                 {
-                    await Bot.SendDeleteConfirmationRequestAsync(message.From, task, cancellationToken);
-                    StateManager.Instance.SetState(message.From, Bot.Settings.States.WaitingDeleteTaskConfirmation);
+                    await Bot.InformTheTaskWasCompletedAsync(message.From, cancellationToken);
+                    StateManager.Instance.SetState(message.From, Bot.Settings.States.Default);
                 }
                 else
                 {
                     await Bot.InformTheTaskWasNotFoundAsync(message.From, cancellationToken);
-                    StateManager.Instance.SetState(message.From, Bot.Settings.States.Default);
                 }
             }
             catch (Exception)

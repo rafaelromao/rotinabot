@@ -77,31 +77,31 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Receivers\CancelReceiver.cs" />
+    <Compile Include="Receivers\CancelCurrentOperation.cs" />
     <Compile Include="Receivers\BaseMessageReceiver.cs" />
-    <Compile Include="Receivers\ConfirmDeleteTaskReceiver.cs" />
-    <Compile Include="Receivers\NewTaskReceiver.cs" />
-    <Compile Include="Receivers\InitialInteractionReceiver.cs" />
+    <Compile Include="Receivers\FinishTaskDeletion.cs" />
+    <Compile Include="Receivers\RequestTaskName.cs" />
+    <Compile Include="Receivers\SendInitialMenu.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Documents\Routine.cs" />
     <Compile Include="Documents\RoutineTask.cs" />
     <Compile Include="Documents\RoutineTaskDays.cs" />
     <Compile Include="Documents\RoutineTaskTime.cs" />
-    <Compile Include="Receivers\Scheduler.cs" />
-    <Compile Include="Receivers\ShowAllMyRoutineReceiver.cs" />
-    <Compile Include="Receivers\ShowAllTaskForDeletionReceiver.cs" />
-    <Compile Include="Receivers\DeleteTaskSelectionReceiver.cs" />
-    <Compile Include="Receivers\ScheduleReminderReceiver.cs" />
-    <Compile Include="Receivers\TaskSelectionReceiver.cs" />
+    <Compile Include="Scheduler.cs" />
+    <Compile Include="Receivers\SendTasksForTheWeek.cs" />
+    <Compile Include="Receivers\SendTasksThatCanBeDeleted.cs" />
+    <Compile Include="Receivers\PrepareTaskToBeDeleted.cs" />
+    <Compile Include="Receivers\SendNextTasks.cs" />
+    <Compile Include="Receivers\MarkTaskAsCompleted.cs" />
     <Compile Include="RotinaBot.cs" />
     <Compile Include="ServiceProvider.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="Startup.cs" />
-    <Compile Include="Receivers\ConfirmNewTaskReceiver.cs" />
-    <Compile Include="Receivers\ShowTodaysRoutineReceiver.cs" />
-    <Compile Include="Receivers\WaitingTaskTimeReceiver.cs" />
-    <Compile Include="Receivers\WaitingTaskDaysReceiver.cs" />
-    <Compile Include="Receivers\WaitingTaskNameReceiver.cs" />
+    <Compile Include="Receivers\FinishTaskCreation.cs" />
+    <Compile Include="Receivers\SendTasksForTheDay.cs" />
+    <Compile Include="Receivers\SetTimeForNewTask.cs" />
+    <Compile Include="Receivers\SetDaysForNewTask.cs" />
+    <Compile Include="Receivers\SetNameForNewTask.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
