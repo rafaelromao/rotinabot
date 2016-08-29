@@ -93,22 +93,26 @@ namespace RotinaBot
                     new SelectOption
                     {
                         Text = Settings.Phraseology.WhatIHaveForToday,
-                        Value = new PlainText { Text = Settings.Commands.Show }
+                        Value = new PlainText { Text = Settings.Commands.Show },
+                        Order = 1
                     },
                     new SelectOption
                     {
                         Text = Settings.Phraseology.WhatIHaveForTheWeek,
-                        Value = new PlainText { Text = Settings.Commands.ShowAll }
+                        Value = new PlainText { Text = Settings.Commands.ShowAll },
+                        Order = 2
                     },
                     new SelectOption
                     {
                         Text = Settings.Phraseology.IncludeATaskInMyRoutine,
-                        Value = new PlainText { Text = Settings.Commands.New }
+                        Value = new PlainText { Text = Settings.Commands.New },
+                        Order = 3
                     },
                     new SelectOption
                     {
                         Text = Settings.Phraseology.ExcludeATaskFromMyRoutine,
-                        Value = new PlainText { Text = Settings.Commands.Delete }
+                        Value = new PlainText { Text = Settings.Commands.Delete },
+                        Order = 4
                     }
                 }
             };
@@ -243,12 +247,14 @@ namespace RotinaBot
                         new SelectOption
                         {
                             Text = Settings.Phraseology.Confirm,
-                            Value = new PlainText {Text = Settings.Commands.ConfirmNew}
+                            Value = new PlainText {Text = Settings.Commands.ConfirmNew},
+                            Order = 1
                         },
                         new SelectOption
                         {
                             Text = Settings.Phraseology.Cancel,
-                            Value = new PlainText {Text = Settings.Phraseology.Cancel}
+                            Value = new PlainText {Text = Settings.Phraseology.Cancel},
+                            Order = 2
                         }
                     }
             };
@@ -319,12 +325,14 @@ namespace RotinaBot
                             new SelectOption
                             {
                                 Text = Settings.Phraseology.Confirm,
-                                Value = new PlainText {Text = Settings.Commands.ConfirmDelete}
+                                Value = new PlainText {Text = Settings.Commands.ConfirmDelete},
+                                Order = 1
                             },
                             new SelectOption
                             {
                                 Text = Settings.Phraseology.Cancel,
-                                Value = new PlainText {Text = Settings.Commands.Cancel}
+                                Value = new PlainText {Text = Settings.Commands.Cancel},
+                                Order = 2
                             }
                         }
             };
