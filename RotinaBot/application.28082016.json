@@ -68,13 +68,12 @@
         {
             "type": "MarkTaskAsCompleted",
             "mediaType": "text/plain",
-            "content": "^(?!/.*).*$",
-            "state": "waitingTaskSelection"
+            "content": "^(/complete:.*)$"
         },
         {
             "type": "PrepareTaskToBeDeleted",
             "mediaType": "text/plain",
-            "content": "^(?!/.*).*$",
+            "content": "^(/delete:.*)$",
             "state": "waitingDeleteTaskSelection"
         },
         {
