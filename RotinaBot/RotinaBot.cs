@@ -264,7 +264,7 @@ namespace RotinaBot
             var routine = await GetRoutineAsync(owner, cancellationToken);
             var task = routine.Tasks.Last();
             task.IsActive = true;
-            await _scheduler.ConfigureScheduleAsync(routine, owner, task.Time.GetValueOrDefault(), cancellationToken);
+            await _scheduler.ConfigureScheduleAsync(routine, owner, task.Time.GetValueOrDefault(), false, cancellationToken);
             await SetRoutineAsync(owner, routine, cancellationToken);
         }
 
@@ -398,7 +398,7 @@ namespace RotinaBot
                 ? RoutineTaskTimeValue.Evening
                 : (DateTime.Now.Hour > 12 ? RoutineTaskTimeValue.Afternoon : RoutineTaskTimeValue.Morning);
 
-            await _scheduler.ConfigureScheduleAsync(routine, owner, time, cancellationToken);
+            await _scheduler.ConfigureScheduleAsync(routine, owner, time, true, cancellationToken);
 
             if (!tasks.Any())
                 return false;

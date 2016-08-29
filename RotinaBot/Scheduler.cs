@@ -23,14 +23,19 @@ namespace RotinaBot
             _delegation = delegation;
         }
 
-        public async Task ConfigureScheduleAsync(Routine routine, Node from, RoutineTaskTimeValue time, CancellationToken cancellationToken)
+        public async Task ConfigureScheduleAsync(Routine routine, Node from, RoutineTaskTimeValue time, bool forceSchedule, CancellationToken cancellationToken)
         {
             // Will send a message to itself, the next day only, reminding it to send a message with the routine for the given days and time for each client
-            if (!routine.Schedules.Any(t => t == time))
+            var isFirstScheduleForTheTimeOrTheDay = !routine.Schedules.Any(t => t == time);
+            if (forceSchedule || isFirstScheduleForTheTimeOrTheDay)
             {
                 await _delegation.DelegateAsync(Identity.Parse("postmaster@scheduler.msging.net"), new [] { EnvelopeType.Message }, cancellationToken);
 
-                routine.Schedules = routine.Schedules.Concat(new[] { time }).ToArray();
+                if (isFirstScheduleForTheTimeOrTheDay)
+                {
+                    routine.Schedules = routine.Schedules.Concat(new[] {time}).ToArray();
+                }
+
                 var identity = new Node(_application.Identifier, _application.Domain, null);
                 var schedule = new Message
                 {
