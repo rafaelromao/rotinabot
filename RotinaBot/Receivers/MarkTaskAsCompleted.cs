@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Lime.Protocol;
+using RotinaBot.Documents;
 using Takenet.MessagingHub.Client;
 
 namespace RotinaBot.Receivers

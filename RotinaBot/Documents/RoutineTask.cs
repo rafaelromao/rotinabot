@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
+using System.Text.RegularExpressions;
+using Lime.Messaging.Contents;
 using Lime.Protocol;
 
 namespace RotinaBot.Documents
@@ -30,5 +32,31 @@ namespace RotinaBot.Documents
         public TimeSpan Delay => DateTime.Today - LastTime;
 
         public RoutineTask() : base(MediaType.Parse("application/x-routinetask+json")) {}
+
+        public static string ExtractTaskIdFromCompleteCommand(string externalTaskId)
+        {
+            var pattern = new Regex(@"^(\/complete:(?<taskId>.*))$");
+            var match = pattern.Match(externalTaskId);
+            var taskId = match.Groups["taskId"].Value;
+            return taskId;
+        }
+
+        public static string ExtractTaskIdFromDeleteCommand(string externalTaskId)
+        {
+            var pattern = new Regex(@"^(\/delete:(?<taskId>.*))$");
+            var match = pattern.Match(externalTaskId);
+            var taskId = match.Groups["taskId"].Value;
+            return taskId;
+        }
+
+        public static string CreateCompleteCommand(string taskId)
+        {
+            return $"/complete:{taskId}";
+        }
+
+        public static string CreateDeleteCommand(string taskId)
+        {
+            return $"/delete:{taskId}";
+        }
     }
 }

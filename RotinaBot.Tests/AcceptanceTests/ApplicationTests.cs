@@ -106,7 +106,7 @@ namespace RotinaBot.Tests.AcceptanceTests
             // Send messages to the bot
             var select = await SendHiAsync();
 
-            var option = @select.Options.Single(o => o.Value.ToString() == Settings.Commands.ShowAll);
+            var option = select.Options.Single(o => o.Value.ToString() == Settings.Commands.ShowAll);
             await Tester.SendMessageAsync(option.Value.ToString());
 
             // Wait for the answer from the bot
@@ -396,6 +396,65 @@ namespace RotinaBot.Tests.AcceptanceTests
             // Cancel the task selection
 
             await Tester.SendMessageAsync(Settings.Commands.Cancel);
+
+            await Tester.IgnoreMessageAsync();
+        }
+
+        [Test]
+        public async Task InsertTwoNewTasksAndMarkBothAsCompletedInSequence()
+        {
+            // Ensure there is no task already registered
+
+            await ShowThereIsNothingForTheWeekAsync();
+
+            // Create a new task
+
+            const string taskName = "Nova tarefa";
+
+            await CreateANewTaskFromTaskNameAsync(taskName);
+
+            // Create another new task
+
+            await CreateANewTaskFromTaskNameAsync(taskName);
+
+            // Request the bot to show the routine for the day
+
+            await Tester.SendMessageAsync(Settings.Commands.Show);
+
+            var response = await Tester.ReceiveMessageAsync();
+
+            var select = response.Content as Select;
+            select.ShouldNotBeNull();
+
+            select?.Options.Length.ShouldBe(3);
+
+            // Mark the first task as completed
+
+            await Tester.SendMessageAsync(select?.Options[0].Value);
+
+            response = await Tester.ReceiveMessageAsync();
+
+            var document = response.Content as PlainText;
+            var actual = document?.Text;
+
+            var expected = Settings.Phraseology.KeepGoing;
+            expected.ShouldNotBeNull();
+
+            actual.ShouldBe(expected);
+
+            // Mark the second task as completed
+
+            await Tester.SendMessageAsync(select?.Options[1].Value);
+
+            response = await Tester.ReceiveMessageAsync();
+
+            document = response.Content as PlainText;
+            actual = document?.Text;
+
+            expected = Settings.Phraseology.KeepGoing;
+            expected.ShouldNotBeNull();
+
+            actual.ShouldBe(expected);
 
             await Tester.IgnoreMessageAsync();
         }

@@ -114,6 +114,11 @@ namespace RotinaBot
             await _sender.SendMessageAsync(select, owner, cancellationToken);
         }
 
+        public async Task InformAProblemHasOcurredAsync(Node owner, CancellationToken cancellationToken)
+        {
+            await _sender.SendMessageAsync(Settings.Phraseology.SorryICannotHelpYouRightNow, owner, cancellationToken);
+        }
+
         #endregion
 
         #region New
@@ -274,8 +279,9 @@ namespace RotinaBot
 
         public async Task<RoutineTask> PrepareTaskToBeDeletedAsync(Node owner, Document content, CancellationToken cancellationToken)
         {
+            var externalTaskId = RoutineTask.ExtractTaskIdFromDeleteCommand(((PlainText)content)?.Text);
             long taskId;
-            long.TryParse(((PlainText)content)?.Text, out taskId);
+            long.TryParse(externalTaskId, out taskId);
             var routine = await GetRoutineAsync(owner, cancellationToken);
             var task = routine.Tasks.FirstOrDefault(t => t.Id == taskId);
             if (task != null)
@@ -338,6 +344,34 @@ namespace RotinaBot
 
         #region Show
 
+        private SelectOption[] BuildTaskSelectionOptions(IEnumerable<RoutineTask> todaysTasks, Func<string, string> buildCommand)
+        {
+            var options = todaysTasks.Select(task => new SelectOption
+            {
+                Text = task.Name,
+                Value = new PlainText { Text = buildCommand(task.Id.ToString()) }
+            }).ToList();
+            options.Add(new SelectOption
+            {
+                Text = Settings.Phraseology.Cancel,
+                Order = options.Count,
+                Value = new PlainText { Text = Settings.Commands.Cancel }
+            });
+            return options.ToArray();
+        }
+
+        private void PrintTasksForDaysAndTime(StringBuilder text, RoutineTaskDaysValue days, RoutineTaskTimeValue time,
+            IEnumerable<RoutineTask> tasks)
+        {
+            text.AppendLine();
+            text.AppendLine($"{days.Name()} {Settings.Phraseology.During} {time.Name()}:");
+            tasks.Where(
+                task => task.Days.GetValueOrDefault() == days && task.Time.GetValueOrDefault() == time
+                ).ForEach(
+                    task => text.AppendLine($"- {task.Name} .")
+                );
+        }
+
         public async Task<bool> SendNextTasksAsync(Node owner, Document content, CancellationToken cancellationToken)
         {
             var identity = content as IdentityDocument;
@@ -347,7 +381,7 @@ namespace RotinaBot
             var routine = await GetRoutineAsync(Node.Parse(identity.ToString()), cancellationToken);
             var isWorkDay = DateTime.Today.DayOfWeek != DayOfWeek.Saturday &&
                             DateTime.Today.DayOfWeek != DayOfWeek.Sunday;
-            var todaysTasks = SortRoutineTasks(routine.Tasks.Where(
+            var tasks = SortRoutineTasks(routine.Tasks.Where(
                 t => t.IsActive && t.LastTime.Date != DateTime.Today &&
                      ((t.Days.GetValueOrDefault() == RoutineTaskDaysValue.EveryDay) ||
                       (t.Days.GetValueOrDefault() == RoutineTaskDaysValue.WorkDays && isWorkDay) ||
@@ -366,24 +400,14 @@ namespace RotinaBot
 
             await _scheduler.ConfigureScheduleAsync(routine, owner, time, cancellationToken);
 
-            if (!todaysTasks.Any())
+            if (!tasks.Any())
                 return false;
 
             var select = new Select
             {
                 Text = Settings.Phraseology.HereAreYourNextTasks
             };
-            var options = todaysTasks.Select(task => new SelectOption
-            {
-                Text = task.Name,
-                Value = new PlainText { Text = task.Id.ToString() }
-            }).ToList();
-            options.Add(new SelectOption
-            {
-                Text = Settings.Phraseology.Cancel,
-                Value = new PlainText { Text = Settings.Commands.Cancel }
-            });
-            select.Options = options.ToArray();
+            select.Options = BuildTaskSelectionOptions(tasks, RoutineTask.CreateCompleteCommand);
             await _sender.SendMessageAsync(select, owner, cancellationToken);
 
             return true;
@@ -392,51 +416,39 @@ namespace RotinaBot
         public async Task<bool> SendTasksForTheWeekAsync(Node owner, CancellationToken cancellationToken)
         {
             var routine = await GetRoutineAsync(owner, cancellationToken);
-            var todaysTasks = SortRoutineTasks(routine.Tasks.Where(
+            var tasks = SortRoutineTasks(routine.Tasks.Where(
                 t => t.IsActive
             ));
 
-            if (!todaysTasks.Any())
+            if (!tasks.Any())
                 return false;
 
             var text = new StringBuilder();
             text.AppendLine(Settings.Phraseology.HereAreYourTasksForTheWeek);
 
-            PrintTasksForDaysAndTime(text, RoutineTaskDaysValue.WorkDays, RoutineTaskTimeValue.Morning, todaysTasks);
-            PrintTasksForDaysAndTime(text, RoutineTaskDaysValue.WorkDays, RoutineTaskTimeValue.Afternoon, todaysTasks);
-            PrintTasksForDaysAndTime(text, RoutineTaskDaysValue.WorkDays, RoutineTaskTimeValue.Evening, todaysTasks);
+            PrintTasksForDaysAndTime(text, RoutineTaskDaysValue.WorkDays, RoutineTaskTimeValue.Morning, tasks);
+            PrintTasksForDaysAndTime(text, RoutineTaskDaysValue.WorkDays, RoutineTaskTimeValue.Afternoon, tasks);
+            PrintTasksForDaysAndTime(text, RoutineTaskDaysValue.WorkDays, RoutineTaskTimeValue.Evening, tasks);
 
-            PrintTasksForDaysAndTime(text, RoutineTaskDaysValue.WeekEnds, RoutineTaskTimeValue.Morning, todaysTasks);
-            PrintTasksForDaysAndTime(text, RoutineTaskDaysValue.WeekEnds, RoutineTaskTimeValue.Afternoon, todaysTasks);
-            PrintTasksForDaysAndTime(text, RoutineTaskDaysValue.WeekEnds, RoutineTaskTimeValue.Evening, todaysTasks);
+            PrintTasksForDaysAndTime(text, RoutineTaskDaysValue.WeekEnds, RoutineTaskTimeValue.Morning, tasks);
+            PrintTasksForDaysAndTime(text, RoutineTaskDaysValue.WeekEnds, RoutineTaskTimeValue.Afternoon, tasks);
+            PrintTasksForDaysAndTime(text, RoutineTaskDaysValue.WeekEnds, RoutineTaskTimeValue.Evening, tasks);
 
-            PrintTasksForDaysAndTime(text, RoutineTaskDaysValue.EveryDay, RoutineTaskTimeValue.Morning, todaysTasks);
-            PrintTasksForDaysAndTime(text, RoutineTaskDaysValue.EveryDay, RoutineTaskTimeValue.Afternoon, todaysTasks);
-            PrintTasksForDaysAndTime(text, RoutineTaskDaysValue.EveryDay, RoutineTaskTimeValue.Evening, todaysTasks);
+            PrintTasksForDaysAndTime(text, RoutineTaskDaysValue.EveryDay, RoutineTaskTimeValue.Morning, tasks);
+            PrintTasksForDaysAndTime(text, RoutineTaskDaysValue.EveryDay, RoutineTaskTimeValue.Afternoon, tasks);
+            PrintTasksForDaysAndTime(text, RoutineTaskDaysValue.EveryDay, RoutineTaskTimeValue.Evening, tasks);
 
             await _sender.SendMessageAsync(text.ToString(), owner, cancellationToken);
 
             return true;
         }
 
-        private void PrintTasksForDaysAndTime(StringBuilder text, RoutineTaskDaysValue days, RoutineTaskTimeValue time,
-            RoutineTask[] todaysTasks)
-        {
-            text.AppendLine();
-            text.AppendLine($"{days.Name()} {Settings.Phraseology.During} {time.Name()}:");
-            todaysTasks.Where(
-                task => task.Days.GetValueOrDefault() == days && task.Time.GetValueOrDefault() == time
-                ).ForEach(
-                    task => text.AppendLine($"- {task.Name} .")
-                );
-        }
-
         public async Task<bool> SendTasksThatCanBeDeletedAsync(Node owner, CancellationToken cancellationToken)
         {
             var routine = await GetRoutineAsync(owner, cancellationToken);
-            var todaysTasks = SortRoutineTasks(routine.Tasks);
+            var tasks = SortRoutineTasks(routine.Tasks);
 
-            if (!todaysTasks.Any())
+            if (!tasks.Any())
             {
                 return false;
             }
@@ -445,20 +457,7 @@ namespace RotinaBot
             {
                 Text = Settings.Phraseology.ChooseATaskToBeDeleted
             };
-            var options = todaysTasks.Select(task => new SelectOption
-            {
-                Text = $"{task.Name} " +
-                       $"{Settings.Phraseology.During} " +
-                       $"{task.Time.GetValueOrDefault().Name().ToLower()} " +
-                       $"{task.Days.GetValueOrDefault().Name().ToLower()}",
-                Value = new PlainText { Text = task.Id.ToString() }
-            }).ToList();
-            options.Add(new SelectOption
-            {
-                Text = Settings.Phraseology.Cancel,
-                Value = new PlainText { Text = Settings.Commands.Cancel }
-            });
-            select.Options = options.ToArray();
+            select.Options = select.Options = BuildTaskSelectionOptions(tasks, RoutineTask.CreateDeleteCommand);
             await _sender.SendMessageAsync(select, owner, cancellationToken);
 
             return true;
@@ -479,34 +478,21 @@ namespace RotinaBot
             var routine = await GetRoutineAsync(owner, cancellationToken);
             var isWorkDay = DateTime.Today.DayOfWeek != DayOfWeek.Saturday &&
                             DateTime.Today.DayOfWeek != DayOfWeek.Sunday;
-            var todaysTasks = SortRoutineTasks(routine.Tasks.Where(
+            var tasks = SortRoutineTasks(routine.Tasks.Where(
                 t => t.IsActive && t.LastTime.Date != DateTime.Today &&
                      ((t.Days.Value == RoutineTaskDaysValue.EveryDay) ||
                       (t.Days.Value == RoutineTaskDaysValue.WorkDays && isWorkDay) ||
                       (t.Days.Value == RoutineTaskDaysValue.WeekEnds && !isWorkDay))
             ));
 
-            if (!todaysTasks.Any())
+            if (!tasks.Any())
                 return false;
 
             var select = new Select
             {
                 Text = Settings.Phraseology.HereAreYouTasksForToday
             };
-            var options = todaysTasks.Select(task => new SelectOption
-            {
-                Text = $"{task.Name} " +
-                       $"{Settings.Phraseology.During} " +
-                       $"{task.Time.GetValueOrDefault().Name().ToLower()}",
-                Value = new PlainText { Text = task.Id.ToString() }
-            }).ToList();
-            options.Add(new SelectOption
-            {
-                Text = Settings.Phraseology.Cancel,
-                Order = options.Count,
-                Value = new PlainText { Text = Settings.Commands.Cancel }
-            });
-            select.Options = options.ToArray();
+            select.Options = select.Options = BuildTaskSelectionOptions(tasks, RoutineTask.CreateCompleteCommand);
             await _sender.SendMessageAsync(select, owner, cancellationToken);
 
             return true;
@@ -514,8 +500,9 @@ namespace RotinaBot
 
         public async Task<bool> MarkTaskAsCompletedAsync(Node owner, Document content, CancellationToken cancellationToken)
         {
+            var externalTaskId = RoutineTask.ExtractTaskIdFromCompleteCommand(((PlainText)content)?.Text);
             long taskId;
-            long.TryParse(((PlainText)content)?.Text, out taskId);
+            long.TryParse(externalTaskId, out taskId);
             var routine = await GetRoutineAsync(owner, cancellationToken);
             var task = routine.Tasks.FirstOrDefault(t => t.Id == taskId);
             if (task == null)
@@ -533,10 +520,5 @@ namespace RotinaBot
         }
 
         #endregion
-
-        public async Task InformAProblemHasOcurredAsync(Node owner, CancellationToken cancellationToken)
-        {
-            await _sender.SendMessageAsync(Settings.Phraseology.SorryICannotHelpYouRightNow, owner, cancellationToken);
-        }
     }
 }
