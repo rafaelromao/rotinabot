@@ -58,8 +58,7 @@ namespace RotinaBot
         private static RoutineTask[] SortRoutineTasks(IEnumerable<RoutineTask> tasks)
         {
             return
-                tasks.OrderBy(t => t.Days.GetValueOrDefault())
-                    .ThenBy(t => t.Time.GetValueOrDefault())
+                tasks.OrderBy(t => t.Time.GetValueOrDefault())
                     .ThenBy(t => t.Name)
                     .ToArray();
         }
@@ -346,18 +345,19 @@ namespace RotinaBot
 
         #region Show
 
-        private SelectOption[] BuildTaskSelectionOptions(IEnumerable<RoutineTask> todaysTasks, Func<string, string> buildCommand)
+        private SelectOption[] BuildTaskSelectionOptions(IEnumerable<RoutineTask> tasks, Func<string, string> buildCommand)
         {
-            var options = todaysTasks.Select(task => new SelectOption
+            var options = tasks.Select((task, i) => new SelectOption
             {
-                Text = task.Name,
-                Value = new PlainText { Text = buildCommand(task.Id.ToString()) }
+                Text = $"{task.Name} {Settings.Phraseology.During} {task.Time.GetValueOrDefault().Name().ToLower()}",
+                Value = new PlainText { Text = buildCommand(task.Id.ToString()) },
+                Order = i
             }).ToList();
             options.Add(new SelectOption
             {
                 Text = Settings.Phraseology.Cancel,
-                Order = options.Count,
-                Value = new PlainText { Text = Settings.Commands.Cancel }
+                Value = new PlainText { Text = Settings.Commands.Cancel },
+                Order = options.Count
             });
             return options.ToArray();
         }
@@ -365,13 +365,16 @@ namespace RotinaBot
         private void PrintTasksForDaysAndTime(StringBuilder text, RoutineTaskDaysValue days, RoutineTaskTimeValue time,
             IEnumerable<RoutineTask> tasks)
         {
+            tasks = tasks.Where(
+                task => (task.Days.GetValueOrDefault() == days || task.Days.GetValueOrDefault() == RoutineTaskDaysValue.EveryDay) && 
+                         task.Time.GetValueOrDefault() == time
+            ).ToArray();
+            if (!tasks.Any())
+                return;
+
             text.AppendLine();
-            text.AppendLine($"{days.Name()} {Settings.Phraseology.During} {time.Name()}:");
-            tasks.Where(
-                task => task.Days.GetValueOrDefault() == days && task.Time.GetValueOrDefault() == time
-                ).ForEach(
-                    task => text.AppendLine($"- {task.Name} .")
-                );
+            text.AppendLine($"{days.Name()} {Settings.Phraseology.During} {time.Name().ToLower()}:");
+            tasks.ForEach(task => text.AppendLine($"- {task.Name}"));
         }
 
         public async Task<bool> SendNextTasksAsync(Node owner, Document content, CancellationToken cancellationToken)
@@ -435,10 +438,6 @@ namespace RotinaBot
             PrintTasksForDaysAndTime(text, RoutineTaskDaysValue.WeekEnds, RoutineTaskTimeValue.Morning, tasks);
             PrintTasksForDaysAndTime(text, RoutineTaskDaysValue.WeekEnds, RoutineTaskTimeValue.Afternoon, tasks);
             PrintTasksForDaysAndTime(text, RoutineTaskDaysValue.WeekEnds, RoutineTaskTimeValue.Evening, tasks);
-
-            PrintTasksForDaysAndTime(text, RoutineTaskDaysValue.EveryDay, RoutineTaskTimeValue.Morning, tasks);
-            PrintTasksForDaysAndTime(text, RoutineTaskDaysValue.EveryDay, RoutineTaskTimeValue.Afternoon, tasks);
-            PrintTasksForDaysAndTime(text, RoutineTaskDaysValue.EveryDay, RoutineTaskTimeValue.Evening, tasks);
 
             await _sender.SendMessageAsync(text.ToString(), owner, cancellationToken);
 

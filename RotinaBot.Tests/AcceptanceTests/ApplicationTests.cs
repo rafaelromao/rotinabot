@@ -126,13 +126,35 @@ namespace RotinaBot.Tests.AcceptanceTests
     }
 
     [TestFixture]
-    public class TestApplicationWithFakeBucket : BaseTestFixture<FakeServiceProviderWithFakeBucket>
+    public class TestApplicationWithFakeBucket : BaseTestFixture<FakeServiceProviderWithFakeBucketAndNoScheduler>
     {
         [Test]
         public async Task SendHi()
         {
             await SendHiAsync();
         }
+
+        [Test]
+        public async Task SendInvalidCommandAndCheckForFallBack()
+        {
+            // Send message to the bot
+            await Tester.SendMessageAsync("/delete:1");
+
+            // Wait for the answer from the bot
+            var response = await Tester.ReceiveMessageAsync();
+            response.ShouldNotBeNull();
+
+            var document = response.Content as Select;
+            var actual = document?.Text;
+
+            // Get the expected response
+            var expected = Settings.Phraseology.InitialMessage;
+            expected.ShouldNotBeNull();
+
+            // Assert that the answer from the bot is the expected one
+            actual.ShouldBe(expected);
+        }
+
 
         [Test]
         public async Task ShowThereIsNothingForToday()

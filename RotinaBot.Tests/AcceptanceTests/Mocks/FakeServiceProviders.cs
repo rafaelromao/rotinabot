@@ -4,11 +4,12 @@ using Takenet.MessagingHub.Client.Extensions.Scheduler;
 
 namespace RotinaBot.Tests.AcceptanceTests.Mocks
 {
-    public class FakeServiceProviderWithFakeBucket : TestServiceProvider
+    public class FakeServiceProviderWithFakeBucketAndNoScheduler : TestServiceProvider
     {
-        static FakeServiceProviderWithFakeBucket()
+        static FakeServiceProviderWithFakeBucketAndNoScheduler()
         {
             RegisterTestService<IBucketExtension, FakeBucketExtension>();
+            RegisterTestService<ISchedulerExtension, NoSchedulerExtension>();
         }
     }
 

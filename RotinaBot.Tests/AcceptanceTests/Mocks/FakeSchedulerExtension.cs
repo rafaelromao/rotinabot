@@ -7,6 +7,15 @@ using Takenet.MessagingHub.Client.Sender;
 
 namespace RotinaBot.Tests.AcceptanceTests.Mocks
 {
+    internal class NoSchedulerExtension : ISchedulerExtension
+    {
+        public Task ScheduleMessageAsync(Message message, DateTimeOffset when,
+            CancellationToken cancellationToken = new CancellationToken())
+        {
+            return Task.CompletedTask;
+        }
+    }
+
     internal class FakeSchedulerExtension : ISchedulerExtension
     {
         private readonly IMessagingHubSender _sender;

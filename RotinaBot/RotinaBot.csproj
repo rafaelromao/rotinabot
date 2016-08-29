@@ -78,6 +78,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="PlainTextMessageReceiver.cs" />
+    <Compile Include="Receivers\SendInitialMenuWhenInvalidCommand.cs" />
     <Compile Include="Receivers\CancelCurrentOperation.cs" />
     <Compile Include="Receivers\BaseMessageReceiver.cs" />
     <Compile Include="Receivers\FinishTaskDeletion.cs" />
