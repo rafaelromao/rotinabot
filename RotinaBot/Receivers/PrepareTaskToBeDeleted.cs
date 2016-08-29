@@ -20,12 +20,12 @@ namespace RotinaBot.Receivers
                 if (task != null)
                 {
                     await Bot.SendDeleteConfirmationRequestAsync(message.From, task, cancellationToken);
-                    StateManager.Instance.SetState(message.From, Bot.Settings.States.WaitingDeleteTaskConfirmation);
+                    Bot.StateManager.SetState(message.From, Bot.Settings.States.WaitingDeleteTaskConfirmation);
                 }
                 else
                 {
                     await Bot.InformTheTaskWasNotFoundAsync(message.From, cancellationToken);
-                    StateManager.Instance.SetState(message.From, Bot.Settings.States.Default);
+                    Bot.StateManager.SetState(message.From, Bot.Settings.States.Default);
                 }
             }
             catch (Exception)

@@ -16,7 +16,7 @@ namespace RotinaBot.Receivers
             var owner = ((IdentityDocument) message.Content).Value.ToNode();
             if (await Bot.SendNextTasksAsync(owner, message.Content, cancellationToken))
             {
-                StateManager.Instance.SetState(owner, Bot.Settings.States.WaitingTaskSelection);
+                Bot.StateManager.SetState(owner, Bot.Settings.States.WaitingTaskSelection);
             }
         }
     }

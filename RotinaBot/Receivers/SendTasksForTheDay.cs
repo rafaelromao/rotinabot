@@ -15,12 +15,12 @@ namespace RotinaBot.Receivers
         {
             if (await Bot.SendTasksForTheDayAsync(message.From, cancellationToken))
             {
-                StateManager.Instance.SetState(message.From, Bot.Settings.States.WaitingTaskSelection);
+                Bot.StateManager.SetState(message.From, Bot.Settings.States.WaitingTaskSelection);
             }
             else
             {
                 await Bot.InformThereIsNoTaskForTodayAsync(message.From, cancellationToken);
-                StateManager.Instance.SetState(message.From, Bot.Settings.States.Default);
+                Bot.StateManager.SetState(message.From, Bot.Settings.States.Default);
             }
         }
     }

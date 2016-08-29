@@ -15,12 +15,12 @@ namespace RotinaBot.Receivers
         {
             if (await Bot.SendTasksThatCanBeDeletedAsync(message.From, cancellationToken))
             {
-                StateManager.Instance.SetState(message.From, Bot.Settings.States.WaitingDeleteTaskSelection);
+                Bot.StateManager.SetState(message.From, Bot.Settings.States.WaitingDeleteTaskSelection);
             }
             else
             {
                 await Bot.InformThereIsNoTaskRegisteredAsync(message.From, cancellationToken);
-                StateManager.Instance.SetState(message.From, Bot.Settings.States.Default);
+                Bot.StateManager.SetState(message.From, Bot.Settings.States.Default);
             }
         }
     }

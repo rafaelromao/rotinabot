@@ -18,7 +18,7 @@ namespace RotinaBot.Receivers
             {
                 await Bot.SetDaysForNewTaskAsync(message.From, message.Content, cancellationToken);
                 await Bot.SendTaskTimeRequestAsync(message.From, cancellationToken);
-                StateManager.Instance.SetState(message.From, Bot.Settings.States.WaitingTaskTime);
+                Bot.StateManager.SetState(message.From, Bot.Settings.States.WaitingTaskTime);
             }
             catch (Exception)
             {

@@ -42,16 +42,16 @@
       <HintPath>packages\Lime.Transport.Tcp.0.6.4\lib\net461\Lime.Transport.Tcp.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="mhh, Version=0.3.131.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\Takenet.MessagingHub.Client.Host.0.3.131\lib\net461\mhh.exe</HintPath>
+    <Reference Include="mhh, Version=0.3.136.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Takenet.MessagingHub.Client.Host.0.3.136\lib\net461\mhh.exe</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="SimpleInjector, Version=3.2.0.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
-      <HintPath>packages\SimpleInjector.3.2.0\lib\net45\SimpleInjector.dll</HintPath>
+    <Reference Include="SimpleInjector, Version=3.2.2.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
+      <HintPath>..\packages\SimpleInjector.3.2.2\lib\net45\SimpleInjector.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -67,16 +67,17 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
-    <Reference Include="Takenet.MessagingHub.Client, Version=0.3.131.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\Takenet.MessagingHub.Client.0.3.131\lib\net461\Takenet.MessagingHub.Client.dll</HintPath>
+    <Reference Include="Takenet.MessagingHub.Client, Version=0.3.136.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Takenet.MessagingHub.Client.0.3.136\lib\net461\Takenet.MessagingHub.Client.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Takenet.MessagingHub.Client.Template, Version=0.3.131.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\Takenet.MessagingHub.Client.Template.0.3.131\lib\net461\Takenet.MessagingHub.Client.Template.dll</HintPath>
+    <Reference Include="Takenet.MessagingHub.Client.Template, Version=0.3.136.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Takenet.MessagingHub.Client.Template.0.3.136\lib\net461\Takenet.MessagingHub.Client.Template.dll</HintPath>
       <Private>True</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="PlainTextMessageReceiver.cs" />
     <Compile Include="Receivers\CancelCurrentOperation.cs" />
     <Compile Include="Receivers\BaseMessageReceiver.cs" />
     <Compile Include="Receivers\FinishTaskDeletion.cs" />

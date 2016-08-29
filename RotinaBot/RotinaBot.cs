@@ -19,14 +19,16 @@ namespace RotinaBot
         private readonly IMessagingHubSender _sender;
         private readonly Scheduler _scheduler;
         private readonly IBucketExtension _bucket;
+        public IStateManager StateManager { get; }
 
         public Settings Settings { get; }
 
-        public RotinaBot(IMessagingHubSender sender, IBucketExtension bucket, Scheduler scheduler, Settings settings)
+        public RotinaBot(IMessagingHubSender sender, IBucketExtension bucket, IStateManager stateManager, Scheduler scheduler, Settings settings)
         {
             _sender = sender;
             _scheduler = scheduler;
             _bucket = bucket;
+            StateManager = stateManager;
             Settings = settings;
         }
 

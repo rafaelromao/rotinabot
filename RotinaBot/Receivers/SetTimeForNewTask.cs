@@ -20,7 +20,7 @@ namespace RotinaBot.Receivers
                 if (task != null)
                 {
                     await Bot.SendTaskConfirmationRequestAsync(message.From, task, cancellationToken);
-                    StateManager.Instance.SetState(message.From, Bot.Settings.States.WaitingTaskConfirmation);
+                    Bot.StateManager.SetState(message.From, Bot.Settings.States.WaitingTaskConfirmation);
                 }
             }
             catch (Exception)
