@@ -16,24 +16,58 @@ namespace RotinaBot.Tests.AcceptanceTests
     {
         protected async Task<Select> SendHiAsync()
         {
-            // Send message to the bot
+            // Send hi to the bot
             await Tester.SendMessageAsync("Oi");
 
             // Wait for the answer from the bot
             var response = await Tester.ReceiveMessageAsync();
             response.ShouldNotBeNull();
 
-            var document = response.Content as Select;
-            var actual = document?.Text;
+            var select = response.Content as Select;
+            var actual = select?.Text;
+
+            string expected;
+
+            if (actual != Settings.Phraseology.InitialMessage)
+            {
+
+                // Receive phone number registration offer
+
+                expected = Settings.Phraseology.PhoneNumberRegistrationOffer;
+                expected.ShouldNotBeNull();
+
+                actual.ShouldBe(expected);
+
+                // Ignore phone number registration
+
+                await Tester.SendMessageAsync(Settings.Commands.Ignore);
+                response = await Tester.ReceiveMessageAsync();
+                response.ShouldNotBeNull();
+
+                var document = response.Content as PlainText;
+                actual = document?.Text;
+
+                expected = Settings.Phraseology.InformRegisterPhoneCommand;
+                expected.ShouldNotBeNull();
+
+                actual.ShouldBe(expected);
+
+                response = await Tester.ReceiveMessageAsync();
+                response.ShouldNotBeNull();
+            }
+
+            // Receive initial menu
+            select = response.Content as Select;
+            actual = select?.Text;
 
             // Get the expected response
-            var expected = Settings.Phraseology.InitialMessage;
+            expected = Settings.Phraseology.InitialMessage;
             expected.ShouldNotBeNull();
 
             // Assert that the answer from the bot is the expected one
             actual.ShouldBe(expected);
 
-            return document;
+            return select;
         }
 
         protected async Task CreateANewTaskFromTaskNameAsync(
@@ -86,7 +120,7 @@ namespace RotinaBot.Tests.AcceptanceTests
 
             // Confirm the new task
 
-            await Tester.SendMessageAsync(cancel ? Settings.Commands.Cancel : Settings.Commands.ConfirmNew);
+            await Tester.SendMessageAsync(cancel ? Settings.Commands.Cancel : Settings.Commands.Confirm);
 
             response = await Tester.ReceiveMessageAsync();
             response.ShouldNotBeNull();

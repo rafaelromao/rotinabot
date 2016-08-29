@@ -19,15 +19,17 @@ namespace RotinaBot
         private readonly IMessagingHubSender _sender;
         private readonly Scheduler _scheduler;
         private readonly IBucketExtension _bucket;
+        private readonly ISMSSender _ismsSender;
         public IStateManager StateManager { get; }
 
         public Settings Settings { get; }
 
-        public RotinaBot(IMessagingHubSender sender, IBucketExtension bucket, IStateManager stateManager, Scheduler scheduler, Settings settings)
+        public RotinaBot(IMessagingHubSender sender, IBucketExtension bucket, IStateManager stateManager, ISMSSender ismsSender, Scheduler scheduler, Settings settings)
         {
             _sender = sender;
             _scheduler = scheduler;
             _bucket = bucket;
+            _ismsSender = ismsSender;
             StateManager = stateManager;
             Settings = settings;
         }
@@ -38,8 +40,22 @@ namespace RotinaBot
         {
             try
             {
-                return await _bucket.GetAsync<Routine>(owner.ToIdentity().ToString(), cancellationToken) ??
+                var routine = await _bucket.GetAsync<Routine>(owner.ToIdentity().ToString(), cancellationToken) ??
                        new Routine { Owner = owner };
+
+                if (routine.PhoneNumberRegistrationStatus != PhoneNumberRegistrationStatus.Confirmed)
+                    return routine;
+
+                var masterOwnerIdentity = await _bucket.GetAsync<IdentityDocument>(routine.PhoneNumber, cancellationToken);
+                if (masterOwnerIdentity != null)
+                {
+                    routine = await _bucket.GetAsync<Routine>(masterOwnerIdentity.Value.ToString(), cancellationToken);
+                }
+                else
+                {
+                    await _bucket.SetAsync(routine.PhoneNumber, new IdentityDocument { Value = owner.ToIdentity() }, TimeSpan.FromDays(short.MaxValue), cancellationToken);
+                }
+                return routine;
             }
             catch
             {
@@ -49,7 +65,7 @@ namespace RotinaBot
 
         private async Task SetRoutineAsync(Node owner, Routine routine, CancellationToken cancellationToken)
         {
-            await _bucket.SetAsync(owner.ToIdentity().ToString(), routine, TimeSpan.FromDays(36500), cancellationToken);
+            await _bucket.SetAsync(owner.ToIdentity().ToString(), routine, TimeSpan.FromDays(short.MaxValue), cancellationToken);
             var proof = await _bucket.GetAsync<Routine>(owner.ToIdentity().ToString(), cancellationToken);
             if (proof.Tasks.Length != routine.Tasks.Length)
                 throw new Exception();
@@ -122,6 +138,101 @@ namespace RotinaBot
         public async Task InformAProblemHasOcurredAsync(Node owner, CancellationToken cancellationToken)
         {
             await _sender.SendMessageAsync(Settings.Phraseology.SorryICannotHelpYouRightNow, owner, cancellationToken);
+        }
+
+        #endregion
+
+        #region Registration
+
+        public async Task<bool> IsPhoneNumberRegisteredAsync(Node owner, CancellationToken cancellationToken)
+        {
+            var routine = await GetRoutineAsync(owner, cancellationToken);
+            return routine.PhoneNumberRegistrationStatus != PhoneNumberRegistrationStatus.Pending;
+        }
+
+        public async Task OfferPhoneNumberRegistrationAsync(Node owner, CancellationToken cancellationToken)
+        {
+            var select = new Select
+            {
+                Text = Settings.Phraseology.PhoneNumberRegistrationOffer,
+                Options = new[]
+                {
+                    new SelectOption
+                    {
+                        Text = Settings.Phraseology.IDoNotWant,
+                        Value = new PlainText { Text = Settings.Commands.Ignore },
+                        Order = 1
+                    }
+                }
+            };
+            await _sender.SendMessageAsync(select, owner, cancellationToken);
+        }
+
+        public async Task IgnorePhoneNumberRegistrationAsync(Node owner, CancellationToken cancellationToken)
+        {
+            var routine = await GetRoutineAsync(owner, cancellationToken);
+            routine.PhoneNumberRegistrationStatus = PhoneNumberRegistrationStatus.Ignored;
+            await SetRoutineAsync(owner, routine, cancellationToken);
+        }
+
+        public async Task SavePhoneNumberAsync(Node owner, Document content, CancellationToken cancellationToken)
+        {
+            var routine = await GetRoutineAsync(owner, cancellationToken);
+            routine.PhoneNumber = content.ToString();
+            var ticks = DateTime.Now.Ticks.ToString();
+            ticks = ticks.Substring(ticks.Length - 4);
+            routine.AuthenticationCode = ticks;
+            await SetRoutineAsync(owner, routine, cancellationToken);
+        }
+
+        public async Task SendPhoneNumberAuthenticationCodeAsync(Node owner, CancellationToken cancellationToken)
+        {
+            var routine = await GetRoutineAsync(owner, cancellationToken);
+            await _ismsSender.SendSMSAsync(routine, cancellationToken);
+            await _sender.SendMessageAsync(Settings.Phraseology.InformSMSCode, owner, cancellationToken);
+        }
+
+        public async Task<bool> ConfirmPhoneNumberAsync(Node owner, Document content, CancellationToken cancellationToken)
+        {
+            var routine = await GetRoutineAsync(owner, cancellationToken);
+            if (content.ToString() != routine.AuthenticationCode)
+                return false;
+
+            routine.PhoneNumberRegistrationStatus = PhoneNumberRegistrationStatus.Confirmed;
+            await SetRoutineAsync(owner, routine, cancellationToken);
+            return true;
+        }
+
+        public async Task InformPhoneNumberRegistrationCommandAsync(Node owner, CancellationToken cancellationToken)
+        {
+            await _sender.SendMessageAsync(Settings.Phraseology.InformRegisterPhoneCommand, owner, cancellationToken);
+        }
+
+        public async Task InformPhoneNumberRegistrationSucceededAsync(Node owner, CancellationToken cancellationToken)
+        {
+            await _sender.SendMessageAsync(Settings.Phraseology.RegistrationOkay, owner, cancellationToken);
+        }
+        public async Task InformPhoneNumberRegistrationFailedAsync(Node owner, CancellationToken cancellationToken)
+        {
+            var select = new Select
+            {
+                Text = Settings.Phraseology.RegistrationFailed,
+                Options = new[] {
+                    new SelectOption
+                    {
+                        Text = Settings.Phraseology.Yes,
+                        Value = new PlainText { Text = Settings.Commands.Register },
+                        Order = 1
+                    },
+                    new SelectOption
+                    {
+                        Text = Settings.Phraseology.No,
+                        Value = new PlainText { Text = Settings.Commands.Cancel },
+                        Order = 2
+                    }
+                }
+            };
+            await _sender.SendMessageAsync(select, owner, cancellationToken);
         }
 
         #endregion
@@ -247,7 +358,7 @@ namespace RotinaBot
                         new SelectOption
                         {
                             Text = Settings.Phraseology.Confirm,
-                            Value = new PlainText {Text = Settings.Commands.ConfirmNew},
+                            Value = new PlainText {Text = Settings.Commands.Confirm},
                             Order = 1
                         },
                         new SelectOption
@@ -325,7 +436,7 @@ namespace RotinaBot
                             new SelectOption
                             {
                                 Text = Settings.Phraseology.Confirm,
-                                Value = new PlainText {Text = Settings.Commands.ConfirmDelete},
+                                Value = new PlainText {Text = Settings.Commands.Confirm},
                                 Order = 1
                             },
                             new SelectOption
@@ -374,7 +485,7 @@ namespace RotinaBot
             IEnumerable<RoutineTask> tasks)
         {
             tasks = tasks.Where(
-                task => (task.Days.GetValueOrDefault() == days || task.Days.GetValueOrDefault() == RoutineTaskDaysValue.EveryDay) && 
+                task => (task.Days.GetValueOrDefault() == days || task.Days.GetValueOrDefault() == RoutineTaskDaysValue.EveryDay) &&
                          task.Time.GetValueOrDefault() == time
             ).ToArray();
             if (!tasks.Any())
@@ -529,5 +640,6 @@ namespace RotinaBot
         }
 
         #endregion
+
     }
 }

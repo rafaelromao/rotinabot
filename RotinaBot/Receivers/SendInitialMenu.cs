@@ -10,7 +10,15 @@ namespace RotinaBot.Receivers
 
         public override async Task ReceiveAsync(Message message, CancellationToken cancellationToken)
         {
-            await Bot.SendInitialMenuAsync(message.From, cancellationToken);
+            if (await Bot.IsPhoneNumberRegisteredAsync(message.From, cancellationToken))
+            {
+                await Bot.SendInitialMenuAsync(message.From, cancellationToken);
+            }
+            else
+            {
+                await Bot.OfferPhoneNumberRegistrationAsync(message.From, cancellationToken);
+                Bot.StateManager.SetState(message.From, Bot.Settings.States.WaitingPhoneNumber);
+            }
         }
     }
 }

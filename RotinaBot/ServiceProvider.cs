@@ -20,6 +20,7 @@ namespace RotinaBot
 
             Container.Options.AllowOverridingRegistrations = true;
 
+            Container.RegisterSingleton<ISMSSender, SMSSender>();
             Container.RegisterSingleton<Scheduler>();
             Container.RegisterSingleton<RotinaBot>();
 

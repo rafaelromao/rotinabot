@@ -16,6 +16,8 @@ namespace RotinaBot
 
     public class Phraseologies
     {
+        public string InformSMSCode { get; set; }
+        public string IDoNotWant { get; set; }
         public string InitialMessage { get; set; }
         public string WhatIHaveForToday { get; set; }
         public string WhatIHaveForTheWeek { get; set; }
@@ -41,17 +43,24 @@ namespace RotinaBot
         public string WhichTimeShallThisTaskBePerformed { get; set; }
         public string WhichDaysShallThisTaskBePerformed { get; set; }
         public string SorryICannotHelpYouRightNow { get; set; }
+        public string PhoneNumberRegistrationOffer { get; set; }
+        public string InformRegisterPhoneCommand { get; set; }
+        public string RegistrationOkay { get; set; }
+        public string RegistrationFailed { get; set; }
+        public string Yes { get; set; }
+        public string No { get; set; }
     }
 
     public class Commands
     {
         public string Show { get; set; }
         public string New { get; set; }
-        public string ConfirmNew { get; set; }
+        public string Confirm { get; set; }
         public string Cancel { get; set; }
         public string ShowAll { get; set; }
         public string Delete { get; set; }
-        public string ConfirmDelete { get; set; }
+        public string Ignore { get; set; }
+        public string Register { get; set; }
     }
 
     public class States
@@ -63,5 +72,7 @@ namespace RotinaBot
         public string WaitingTaskTime { get; set; }
         public string WaitingTaskDays { get; set; }
         public string WaitingTaskConfirmation { get; set; }
+        public string WaitingPhoneNumber { get; set; }
+        public string WaitingSMSCode { get; set; }
     }
 }

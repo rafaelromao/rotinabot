@@ -77,7 +77,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Documents\PhoneNumberRegistrationStatus.cs" />
+    <Compile Include="ISmsSender.cs" />
     <Compile Include="PlainTextMessageReceiver.cs" />
+    <Compile Include="Receivers\ConfirmPhoneNumber.cs" />
+    <Compile Include="Receivers\SavePhoneNumber.cs" />
+    <Compile Include="Receivers\IgnorePhoneNumberRegistration.cs" />
+    <Compile Include="Receivers\OfferPhoneNumberRegistration.cs" />
     <Compile Include="Receivers\SendInitialMenuWhenInvalidCommand.cs" />
     <Compile Include="Receivers\CancelCurrentOperation.cs" />
     <Compile Include="Receivers\BaseMessageReceiver.cs" />
@@ -98,6 +104,7 @@
     <Compile Include="RotinaBot.cs" />
     <Compile Include="ServiceProvider.cs" />
     <Compile Include="Settings.cs" />
+    <Compile Include="SMSSender.cs" />
     <Compile Include="Startup.cs" />
     <Compile Include="Receivers\FinishTaskCreation.cs" />
     <Compile Include="Receivers\SendTasksForTheDay.cs" />
@@ -110,7 +117,6 @@
     <None Include="application.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Credits.md" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
