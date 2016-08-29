@@ -212,6 +212,7 @@ namespace RotinaBot
         {
             await _sender.SendMessageAsync(Settings.Phraseology.RegistrationOkay, owner, cancellationToken);
         }
+
         public async Task InformPhoneNumberRegistrationFailedAsync(Node owner, CancellationToken cancellationToken)
         {
             var select = new Select

@@ -21,4 +21,15 @@ namespace RotinaBot.Tests.AcceptanceTests.Mocks
             RegisterTestService<ISchedulerExtension, FakeSchedulerExtension>();
         }
     }
+
+    public class FakeServiceProviderWithFakeBucketNoSchedulerAndFakeSMSSender : TestServiceProvider
+    {
+        static FakeServiceProviderWithFakeBucketNoSchedulerAndFakeSMSSender()
+        {
+            RegisterTestService<IBucketExtension, FakeBucketExtension>();
+            RegisterTestService<ISchedulerExtension, NoSchedulerExtension>();
+            RegisterTestService<ISMSSender, FakeSMSSender>();
+        }
+    }
+
 }

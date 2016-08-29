@@ -612,4 +612,59 @@ namespace RotinaBot.Tests.AcceptanceTests
             select.Text.ShouldBe(Settings.Phraseology.HereAreYourNextTasks);
         }
     }
+
+    [TestFixture]
+    public class TestApplicationWithFakeBucketNoSchedulerAndFakeSMSSender : BaseTestFixture<FakeServiceProviderWithFakeBucketNoSchedulerAndFakeSMSSender>
+    {
+        [Test]
+        public async Task RegisterPhoneNumberWithSuccess()
+        {
+            // Send hi to the bot
+            await Tester.SendMessageAsync("Oi");
+
+            // Wait for the answer from the bot
+            var response = await Tester.ReceiveMessageAsync();
+            response.ShouldNotBeNull();
+
+            var select = response.Content as Select;
+            var actual = select?.Text;
+
+
+            // Receive phone number registration offer
+
+            var expected = Settings.Phraseology.PhoneNumberRegistrationOffer;
+            expected.ShouldNotBeNull();
+
+            actual.ShouldBe(expected);
+
+            // Send phone number
+
+            await Tester.SendMessageAsync("31955557777");
+            response = await Tester.ReceiveMessageAsync();
+            response.ShouldNotBeNull();
+
+            var document = response.Content as PlainText;
+            actual = document?.Text;
+
+            expected = Settings.Phraseology.InformSMSCode;
+            expected.ShouldNotBeNull();
+
+            actual.ShouldBe(expected);
+
+            // SMS code will be automatically sent by FakeSMSSender
+
+            // Assert registration was okay
+
+            response = await Tester.ReceiveMessageAsync();
+            response.ShouldNotBeNull();
+
+            document = response.Content as PlainText;
+            actual = document?.Text;
+
+            expected = Settings.Phraseology.RegistrationOkay;
+            expected.ShouldNotBeNull();
+
+            actual.ShouldBe(expected);
+        }
+    }
 }
