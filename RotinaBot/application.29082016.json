@@ -10,7 +10,7 @@
     {
       "type": "SendInitialMenu",
       "mediaType": "text/plain",
-      "content": "^(oi|olá|ola|começar|comecar|iniciar|start|/start)$"
+      "content": "^(oi|olá|ola|menu|começar|comecar|iniciar|start|/start)$"
     },
     {
       "type": "RequestTaskName",
@@ -20,7 +20,7 @@
     {
       "type": "SetNameForNewTask",
       "mediaType": "text/plain",
-      "content": "^((?!(/.*)|(^[0-9]*$)|oi|olá|ola|começar|comecar|iniciar|start).)*$"
+      "content": "^((?!(/.*)|(^[0-9\\-\\(\\)]*$)|oi|olá|ola|menu|começar|comecar|iniciar|start).)*$"
     },
     {
       "type": "SetDaysForNewTask",
@@ -37,7 +37,7 @@
     {
       "type": "FinishTaskCreation",
       "mediaType": "text/plain",
-      "content": "^(/confirmNew)$",
+      "content": "^(/confirm)$",
       "state": "waitingTaskConfirmation",
       "outState": "default"
     },
@@ -60,7 +60,7 @@
     {
       "type": "FinishTaskDeletion",
       "mediaType": "text/plain",
-      "content": "^(/confirmDelete)$",
+      "content": "^(/confirm)$",
       "state": "waitingDeleteTaskConfirmation",
       "outState": "default"
     },
@@ -82,6 +82,29 @@
       "state": "waitingDeleteTaskSelection"
     },
     {
+      "type": "SavePhoneNumber",
+      "mediaType": "text/plain",
+      "content": "^([0-9\\-\\(\\)]*)$",
+      "state": "waitingPhoneNumber"
+    },
+    {
+      "type": "IgnorePhoneNumberRegistration",
+      "mediaType": "text/plain",
+      "content": "^(/ignore)$",
+      "state": "waitingPhoneNumber"
+    },
+    {
+      "type": "ConfirmPhoneNumber",
+      "mediaType": "text/plain",
+      "content": "^([0-9\\-\\(\\)]*)$",
+      "state": "waitingSMSCode"
+    },
+    {
+      "type": "OfferPhoneNumberRegistration",
+      "mediaType": "text/plain",
+      "content": "^(/register)$"
+    },
+    {
       "type": "SendNextTasks",
       "mediaType": "application/vnd.lime.identity"
     }
@@ -89,10 +112,10 @@
   "settings": {
     "phraseology": {
       "initialMessage": "Olá, em que posso ajudar para que você tenha uma rotina mais organizada?",
-      "whatIHaveForToday": "O que tenho para hoje?",
-      "whatIHaveForTheWeek": "O que tenho para a semana?",
-      "includeATaskInMyRoutine": "Inclua uma tarefa à minha rotina",
-      "excludeATaskFromMyRoutine": "Exclua uma tarefa da minha rotina",
+      "whatIHaveForToday": "Tarefas de hoje",
+      "whatIHaveForTheWeek": "Tarefas da semana?",
+      "includeATaskInMyRoutine": "Incluir tarefa",
+      "excludeATaskFromMyRoutine": "Excluir tarefa",
       "NoTaskForToday": "Não há nenhuma tarefa pendente para hoje!",
       "WheneverYouNeed": "Se precisar de mim, estou às ordens!",
       "TheTaskWasRemoved": "Concluído! A tarefa foi removida da sua rotina!",
@@ -112,16 +135,25 @@
       "KeepGoing": "Parabéns! Continue cumprindo as tarefas da sua rotina!",
       "WhichTimeShallThisTaskBePerformed": "E em que dias da semana essa tarefa deve ser realizada?",
       "WhichDaysShallThisTaskBePerformed": "E qual o melhor momento do dia para esta tarefa?",
-      "SorryICannotHelpYouRightNow": "Desculpe, não poderei te ajudar no momento!"
+      "SorryICannotHelpYouRightNow": "Desculpe, não poderei te ajudar no momento!",
+      "PhoneNumberRegistrationOffer": "Olá. Gostaria de ter acesso à sua rotina em outros aplicativos de mensagem? Se sim, me informe o número de seu celular com DDD, sem traços, parênteses ou espaços.",
+      "IDoNotWant": "Não tenho interesse!",
+      "InformRegisterPhoneCommand": "Caso mude de ideia, envie uma mensagem com o comando /register!",
+      "InformSMSCode": "Me informe por favor o código que lhe enviei por SMS",
+      "RegistrationOkay": "A partir de agora você pode buscar pelo @rotinabot no Facebook, Telegram ou OMNI e ter acesso à sua rotina em qualquer um deles",
+      "RegistrationFailed": "Código não confere! Deseja tentar novamente?",
+      "Yes": "Yes",
+      "No": "No"
     },
     "commands": {
       "show": "/show",
       "new": "/new",
-      "confirmnew": "/confirmNew",
+      "confirm": "/confirm",
       "cancel": "/cancel",
       "showall": "/showAll",
       "delete": "/delete",
-      "confirmdelete": "/confirmDelete"
+      "ignore": "/ignore",
+      "register": "/register"
     },
     "states": {
       "default": "default",
@@ -130,7 +162,9 @@
       "waitingDeleteTaskSelection": "waitingDeleteTaskSelection",
       "waitingTaskTime": "waitingTaskTime",
       "waitingTaskDays": "waitingTaskDays",
-      "waitingTaskConfirmation": "waitingTaskConfirmation"
+      "waitingTaskConfirmation": "waitingTaskConfirmation",
+      "waitingPhoneNumber": "waitingPhoneNumber",
+      "waitingSMSCode": "waitingSMSCode"
     }
   },
   "settingsType": "Settings",
