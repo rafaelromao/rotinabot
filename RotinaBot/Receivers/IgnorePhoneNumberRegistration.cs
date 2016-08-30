@@ -17,6 +17,7 @@ namespace RotinaBot.Receivers
             await Bot.InformPhoneNumberRegistrationCommandAsync(message.From, cancellationToken);
             await Task.Delay(TimeSpan.FromMilliseconds(300), cancellationToken);
             await Bot.SendInitialMenuAsync(message.From, cancellationToken);
+            Bot.StateManager.SetState(message.From, Bot.Settings.States.Default);
         }
     }
 }

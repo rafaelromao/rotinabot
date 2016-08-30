@@ -36,14 +36,18 @@ namespace RotinaBot
 
         #region Generic
 
-        private async Task<Routine> GetRoutineAsync(Node owner, CancellationToken cancellationToken)
+        private async Task<Routine> GetRoutineAsync(Node owner, bool allowSlaveRoutine, CancellationToken cancellationToken)
         {
             try
             {
-                var routine = await _bucket.GetAsync<Routine>(owner.ToIdentity().ToString(), cancellationToken) ??
-                       new Routine { Owner = owner };
+                var routine = await _bucket.GetAsync<Routine>(owner.ToIdentity().ToString(), cancellationToken);
+                if (routine == null)
+                {
+                    routine = new Routine { Owner = owner };
+                    await _bucket.SetAsync(owner.ToIdentity().ToString(), routine, TimeSpan.FromDays(short.MaxValue), cancellationToken);
+                }
 
-                if (routine.PhoneNumberRegistrationStatus != PhoneNumberRegistrationStatus.Confirmed)
+                if (routine.PhoneNumber == null || allowSlaveRoutine)
                     return routine;
 
                 var masterOwnerIdentity = await _bucket.GetAsync<IdentityDocument>(routine.PhoneNumber, cancellationToken);
@@ -87,7 +91,7 @@ namespace RotinaBot
 
         public async Task CancelCurrentOperationAsync(Node owner, CancellationToken cancellationToken)
         {
-            var routine = await GetRoutineAsync(owner, cancellationToken);
+            var routine = await GetRoutineAsync(owner, false, cancellationToken);
             if (!routine.Tasks.Last().IsActive)
             {
                 routine.Tasks = routine.Tasks.Take(routine.Tasks.Length - 1).ToArray();
@@ -152,7 +156,7 @@ namespace RotinaBot
 
         public async Task<bool> IsPhoneNumberRegisteredAsync(Node owner, CancellationToken cancellationToken)
         {
-            var routine = await GetRoutineAsync(owner, cancellationToken);
+            var routine = await GetRoutineAsync(owner, true, cancellationToken);
             return routine.PhoneNumberRegistrationStatus != PhoneNumberRegistrationStatus.Pending;
         }
 
@@ -176,7 +180,7 @@ namespace RotinaBot
 
         public async Task IgnorePhoneNumberRegistrationAsync(Node owner, CancellationToken cancellationToken)
         {
-            var routine = await GetRoutineAsync(owner, cancellationToken);
+            var routine = await GetRoutineAsync(owner, true, cancellationToken);
             routine.PhoneNumberRegistrationStatus = PhoneNumberRegistrationStatus.Ignored;
             await SetRoutineAsync(owner, routine, cancellationToken);
         }
@@ -190,7 +194,7 @@ namespace RotinaBot
             if (phoneNumber.ToString().Length < 10 || phoneNumber.ToString().Length > 13)
                 return false;
 
-            var routine = await GetRoutineAsync(owner, cancellationToken);
+            var routine = await GetRoutineAsync(owner, true, cancellationToken);
             routine.PhoneNumber = phoneNumber.ToString();
             routine.AuthenticationCode = _ismsAuthenticator.GenerateAuthenticationCode();
             await SetRoutineAsync(owner, routine, cancellationToken);
@@ -199,14 +203,14 @@ namespace RotinaBot
 
         public async Task SendPhoneNumberAuthenticationCodeAsync(Node owner, CancellationToken cancellationToken)
         {
-            var routine = await GetRoutineAsync(owner, cancellationToken);
+            var routine = await GetRoutineAsync(owner, true, cancellationToken);
             await _ismsAuthenticator.SendSMSAsync(routine, cancellationToken);
             await _sender.SendMessageAsync(Settings.Phraseology.InformSMSCode, owner, cancellationToken);
         }
 
         public async Task<bool> ConfirmPhoneNumberAsync(Node owner, Document content, CancellationToken cancellationToken)
         {
-            var routine = await GetRoutineAsync(owner, cancellationToken);
+            var routine = await GetRoutineAsync(owner, true, cancellationToken);
             if (content.ToString() != routine.AuthenticationCode)
                 return false;
 
@@ -263,7 +267,7 @@ namespace RotinaBot
             var daysValue = (RoutineTaskDaysValue)Enum.Parse(typeof(RoutineTaskDaysValue), daysText);
             var taskDays = new RoutineTaskDays { Value = daysValue };
 
-            var routine = await GetRoutineAsync(owner, cancellationToken);
+            var routine = await GetRoutineAsync(owner, false, cancellationToken);
             var task = routine.Tasks.Last();
             task.Days = taskDays;
             await SetRoutineAsync(owner, routine, cancellationToken);
@@ -304,7 +308,7 @@ namespace RotinaBot
         public async Task SetNameForNewTaskAsync(Node owner, Document content, CancellationToken cancellationToken)
         {
             var taskName = ((PlainText)content).Text;
-            var routine = await GetRoutineAsync(owner, cancellationToken);
+            var routine = await GetRoutineAsync(owner, false, cancellationToken);
             routine.Tasks = routine.Tasks ?? new RoutineTask[0];
             routine.Tasks = routine.Tasks.Concat(new[]
             {
@@ -355,7 +359,7 @@ namespace RotinaBot
             var timeValue = (RoutineTaskTimeValue)Enum.Parse(typeof(RoutineTaskDaysValue), timeText);
             var taskTime = new RoutineTaskTime { Value = timeValue };
 
-            var routine = await GetRoutineAsync(owner, cancellationToken);
+            var routine = await GetRoutineAsync(owner, false, cancellationToken);
             var task = routine.Tasks.Last();
             task.Time = taskTime;
             await SetRoutineAsync(owner, routine, cancellationToken);
@@ -397,7 +401,7 @@ namespace RotinaBot
 
         public async Task FinishTaskCreationAsync(Node owner, CancellationToken cancellationToken)
         {
-            var routine = await GetRoutineAsync(owner, cancellationToken);
+            var routine = await GetRoutineAsync(owner, false, cancellationToken);
             var task = routine.Tasks.Last();
             task.IsActive = true;
             await _scheduler.ConfigureScheduleAsync(routine, owner, task.Time.GetValueOrDefault(), cancellationToken);
@@ -418,7 +422,7 @@ namespace RotinaBot
             var externalTaskId = RoutineTask.ExtractTaskIdFromDeleteCommand(((PlainText)content)?.Text);
             long taskId;
             long.TryParse(externalTaskId, out taskId);
-            var routine = await GetRoutineAsync(owner, cancellationToken);
+            var routine = await GetRoutineAsync(owner, false, cancellationToken);
             var task = routine.Tasks.FirstOrDefault(t => t.Id == taskId);
             if (task != null)
             {
@@ -435,7 +439,7 @@ namespace RotinaBot
 
         public async Task FinishTaskDeletionAsync(Node owner, CancellationToken cancellationToken)
         {
-            var routine = await GetRoutineAsync(owner, cancellationToken);
+            var routine = await GetRoutineAsync(owner, false, cancellationToken);
             routine.Tasks = routine.Tasks.Take(routine.Tasks.Length - 1).ToArray();
             await SetRoutineAsync(owner, routine, cancellationToken);
         }
@@ -526,7 +530,7 @@ namespace RotinaBot
                   ? RoutineTaskTimeValue.Afternoon 
                   : RoutineTaskTimeValue.Morning;
 
-            var routine = await GetRoutineAsync(Node.Parse(identity.ToString()), cancellationToken);
+            var routine = await GetRoutineAsync(Node.Parse(identity.ToString()), false, cancellationToken);
 
             var isWorkDay = DateTime.Today.DayOfWeek != DayOfWeek.Saturday &&
                             DateTime.Today.DayOfWeek != DayOfWeek.Sunday;
@@ -557,7 +561,7 @@ namespace RotinaBot
 
         public async Task<bool> SendTasksForTheWeekAsync(Node owner, CancellationToken cancellationToken)
         {
-            var routine = await GetRoutineAsync(owner, cancellationToken);
+            var routine = await GetRoutineAsync(owner, false, cancellationToken);
             var tasks = SortRoutineTasks(routine.Tasks.Where(
                 t => t.IsActive
             ));
@@ -583,7 +587,7 @@ namespace RotinaBot
 
         public async Task<bool> SendTasksThatCanBeDeletedAsync(Node owner, CancellationToken cancellationToken)
         {
-            var routine = await GetRoutineAsync(owner, cancellationToken);
+            var routine = await GetRoutineAsync(owner, false, cancellationToken);
             var tasks = SortRoutineTasks(routine.Tasks);
 
             if (!tasks.Any())
@@ -613,7 +617,7 @@ namespace RotinaBot
 
         public async Task<bool> SendTasksForTheDayAsync(Node owner, CancellationToken cancellationToken)
         {
-            var routine = await GetRoutineAsync(owner, cancellationToken);
+            var routine = await GetRoutineAsync(owner, false, cancellationToken);
             var isWorkDay = DateTime.Today.DayOfWeek != DayOfWeek.Saturday &&
                             DateTime.Today.DayOfWeek != DayOfWeek.Sunday;
             var tasks = SortRoutineTasks(routine.Tasks.Where(
@@ -641,7 +645,7 @@ namespace RotinaBot
             var externalTaskId = RoutineTask.ExtractTaskIdFromCompleteCommand(((PlainText)content)?.Text);
             long taskId;
             long.TryParse(externalTaskId, out taskId);
-            var routine = await GetRoutineAsync(owner, cancellationToken);
+            var routine = await GetRoutineAsync(owner, false, cancellationToken);
             var task = routine.Tasks.FirstOrDefault(t => t.Id == taskId);
             if (task == null)
                 return false;
