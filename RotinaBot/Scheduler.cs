@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Lime.Protocol;
@@ -23,18 +22,26 @@ namespace RotinaBot
             _delegation = delegation;
         }
 
-        public async Task ConfigureScheduleAsync(Routine routine, Node from, RoutineTaskTimeValue time, bool forceSchedule, CancellationToken cancellationToken)
+        public async Task ConfigureScheduleAsync(Routine routine, Node from, RoutineTaskTimeValue time, CancellationToken cancellationToken)
         {
             // Will send a message to itself, the next day only, reminding it to send a message with the routine for the given days and time for each client
-            var isFirstScheduleForTheTimeOrTheDay = !routine.Schedules.Any(t => t == time);
-            if (forceSchedule || isFirstScheduleForTheTimeOrTheDay)
-            {
-                await _delegation.DelegateAsync(Identity.Parse("postmaster@scheduler.msging.net"), new [] { EnvelopeType.Message }, cancellationToken);
+            var shouldScheduleAtMorning = time == RoutineTaskTimeValue.Morning &&
+                                          routine.LastMorningReminder != DateTime.Today;
+            var shouldScheduleAtAfternoon = time == RoutineTaskTimeValue.Afternoon &&
+                                          routine.LastAfternoonReminder != DateTime.Today;
+            var shouldScheduleAtEvening = time == RoutineTaskTimeValue.Evening &&
+                                          routine.LastEveningReminder != DateTime.Today;
 
-                if (isFirstScheduleForTheTimeOrTheDay)
-                {
-                    routine.Schedules = routine.Schedules.Concat(new[] {time}).ToArray();
-                }
+            if (shouldScheduleAtMorning || shouldScheduleAtAfternoon || shouldScheduleAtEvening)
+            {
+                await _delegation.DelegateAsync(Identity.Parse("postmaster@scheduler.msging.net"), new[] { EnvelopeType.Message }, cancellationToken);
+
+                if (shouldScheduleAtMorning)
+                    routine.LastMorningReminder = DateTime.Today;
+                if (shouldScheduleAtAfternoon)
+                    routine.LastAfternoonReminder = DateTime.Today;
+                if (shouldScheduleAtEvening)
+                    routine.LastEveningReminder = DateTime.Today;
 
                 var identity = new Node(_application.Identifier, _application.Domain, null);
                 var schedule = new Message
@@ -46,8 +53,8 @@ namespace RotinaBot
                 var isBeforeMorning = DateTime.Now.Hour < 6;
                 var isBeforeAfternoon = DateTime.Now.Hour < 12;
                 var isBeforeEvening = DateTime.Now.Hour < 18;
-                var firstMorningSchedule = isBeforeMorning 
-                    ? new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 6, 0 , 0) 
+                var firstMorningSchedule = isBeforeMorning
+                    ? new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 6, 0, 0)
                     : new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day + 1, 6, 0, 0);
                 var firstAfternoonSchedule = isBeforeAfternoon
                     ? new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 12, 0, 0)
@@ -58,7 +65,6 @@ namespace RotinaBot
 
                 switch (time)
                 {
-                    default:
                     case RoutineTaskTimeValue.Morning:
                         await _scheduler.ScheduleMessageAsync(schedule, firstMorningSchedule, cancellationToken);
                         break;

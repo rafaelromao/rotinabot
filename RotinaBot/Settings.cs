@@ -49,15 +49,17 @@ namespace RotinaBot
         public string RegistrationFailed { get; set; }
         public string Yes { get; set; }
         public string No { get; set; }
+        public string ThisIsNotAValidPhoneNumber { get; set; }
     }
 
     public class Commands
     {
-        public string Show { get; set; }
+        public string Next { get; set; }
+        public string Day { get; set; }
+        public string Week { get; set; }
         public string New { get; set; }
         public string Confirm { get; set; }
         public string Cancel { get; set; }
-        public string ShowAll { get; set; }
         public string Delete { get; set; }
         public string Ignore { get; set; }
         public string Register { get; set; }

@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Lime.Protocol;
@@ -7,13 +8,20 @@ using Takenet.MessagingHub.Client.Sender;
 
 namespace RotinaBot
 {
-    internal class SMSSender : ISMSSender
+    internal class SMSAuthenticator : ISMSAuthenticator
     {
         private readonly IMessagingHubSender _sender;
 
-        public SMSSender(IMessagingHubSender sender)
+        public SMSAuthenticator(IMessagingHubSender sender)
         {
             _sender = sender;
+        }
+
+        public string GenerateAuthenticationCode()
+        {
+            var ticks = DateTime.Now.Ticks.ToString();
+            ticks = ticks.Substring(ticks.Length - 4);
+            return ticks;
         }
 
         public async Task SendSMSAsync(Routine routine, CancellationToken cancellationToken)

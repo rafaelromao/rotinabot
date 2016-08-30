@@ -19,17 +19,17 @@ namespace RotinaBot
         private readonly IMessagingHubSender _sender;
         private readonly Scheduler _scheduler;
         private readonly IBucketExtension _bucket;
-        private readonly ISMSSender _ismsSender;
+        private readonly ISMSAuthenticator _ismsAuthenticator;
         public IStateManager StateManager { get; }
 
         public Settings Settings { get; }
 
-        public RotinaBot(IMessagingHubSender sender, IBucketExtension bucket, IStateManager stateManager, ISMSSender ismsSender, Scheduler scheduler, Settings settings)
+        public RotinaBot(IMessagingHubSender sender, IBucketExtension bucket, IStateManager stateManager, ISMSAuthenticator ismsAuthenticator, Scheduler scheduler, Settings settings)
         {
             _sender = sender;
             _scheduler = scheduler;
             _bucket = bucket;
-            _ismsSender = ismsSender;
+            _ismsAuthenticator = ismsAuthenticator;
             StateManager = stateManager;
             Settings = settings;
         }
@@ -49,7 +49,13 @@ namespace RotinaBot
                 var masterOwnerIdentity = await _bucket.GetAsync<IdentityDocument>(routine.PhoneNumber, cancellationToken);
                 if (masterOwnerIdentity != null)
                 {
-                    routine = await _bucket.GetAsync<Routine>(masterOwnerIdentity.Value.ToString(), cancellationToken);
+                    var ownerRoutine = await _bucket.GetAsync<Routine>(masterOwnerIdentity.Value.ToString(), cancellationToken);
+                    if (ownerRoutine != routine && routine.Tasks.Length > 0)
+                    {
+                        ownerRoutine.Tasks = ownerRoutine.Tasks.Concat(routine.Tasks).ToArray();
+                        routine.Tasks = new RoutineTask[0];
+                    }
+                    routine = ownerRoutine;
                 }
                 else
                 {
@@ -109,13 +115,13 @@ namespace RotinaBot
                     new SelectOption
                     {
                         Text = Settings.Phraseology.WhatIHaveForToday,
-                        Value = new PlainText { Text = Settings.Commands.Show },
+                        Value = new PlainText { Text = Settings.Commands.Day },
                         Order = 1
                     },
                     new SelectOption
                     {
                         Text = Settings.Phraseology.WhatIHaveForTheWeek,
-                        Value = new PlainText { Text = Settings.Commands.ShowAll },
+                        Value = new PlainText { Text = Settings.Commands.Week },
                         Order = 2
                     },
                     new SelectOption
@@ -175,20 +181,26 @@ namespace RotinaBot
             await SetRoutineAsync(owner, routine, cancellationToken);
         }
 
-        public async Task SavePhoneNumberAsync(Node owner, Document content, CancellationToken cancellationToken)
+        public async Task<bool> SavePhoneNumberAsync(Node owner, Document content, CancellationToken cancellationToken)
         {
+            long phoneNumber;
+            if (!long.TryParse(content.ToString().Replace("(", "").Replace(")", "").Replace("-", ""), out phoneNumber))
+                return false;
+
+            if (phoneNumber.ToString().Length < 10 || phoneNumber.ToString().Length > 13)
+                return false;
+
             var routine = await GetRoutineAsync(owner, cancellationToken);
-            routine.PhoneNumber = content.ToString();
-            var ticks = DateTime.Now.Ticks.ToString();
-            ticks = ticks.Substring(ticks.Length - 4);
-            routine.AuthenticationCode = ticks;
+            routine.PhoneNumber = phoneNumber.ToString();
+            routine.AuthenticationCode = _ismsAuthenticator.GenerateAuthenticationCode();
             await SetRoutineAsync(owner, routine, cancellationToken);
+            return true;
         }
 
         public async Task SendPhoneNumberAuthenticationCodeAsync(Node owner, CancellationToken cancellationToken)
         {
             var routine = await GetRoutineAsync(owner, cancellationToken);
-            await _ismsSender.SendSMSAsync(routine, cancellationToken);
+            await _ismsAuthenticator.SendSMSAsync(routine, cancellationToken);
             await _sender.SendMessageAsync(Settings.Phraseology.InformSMSCode, owner, cancellationToken);
         }
 
@@ -211,6 +223,11 @@ namespace RotinaBot
         public async Task InformPhoneNumberRegistrationSucceededAsync(Node owner, CancellationToken cancellationToken)
         {
             await _sender.SendMessageAsync(Settings.Phraseology.RegistrationOkay, owner, cancellationToken);
+        }
+
+        public async Task InformPhoneNumberIsWrongAsync(Node owner, CancellationToken cancellationToken)
+        {
+            await _sender.SendMessageAsync(Settings.Phraseology.ThisIsNotAValidPhoneNumber, owner, cancellationToken);
         }
 
         public async Task InformPhoneNumberRegistrationFailedAsync(Node owner, CancellationToken cancellationToken)
@@ -383,7 +400,7 @@ namespace RotinaBot
             var routine = await GetRoutineAsync(owner, cancellationToken);
             var task = routine.Tasks.Last();
             task.IsActive = true;
-            await _scheduler.ConfigureScheduleAsync(routine, owner, task.Time.GetValueOrDefault(), false, cancellationToken);
+            await _scheduler.ConfigureScheduleAsync(routine, owner, task.Time.GetValueOrDefault(), cancellationToken);
             await SetRoutineAsync(owner, routine, cancellationToken);
         }
 
@@ -503,27 +520,27 @@ namespace RotinaBot
             if (identity == null)
                 return false;
 
+            var time = DateTime.Now.Hour >= 18
+                ? RoutineTaskTimeValue.Evening
+                : DateTime.Now.Hour >= 12 
+                  ? RoutineTaskTimeValue.Afternoon 
+                  : RoutineTaskTimeValue.Morning;
+
             var routine = await GetRoutineAsync(Node.Parse(identity.ToString()), cancellationToken);
+
             var isWorkDay = DateTime.Today.DayOfWeek != DayOfWeek.Saturday &&
                             DateTime.Today.DayOfWeek != DayOfWeek.Sunday;
+
+
             var tasks = SortRoutineTasks(routine.Tasks.Where(
                 t => t.IsActive && t.LastTime.Date != DateTime.Today &&
                      ((t.Days.GetValueOrDefault() == RoutineTaskDaysValue.EveryDay) ||
                       (t.Days.GetValueOrDefault() == RoutineTaskDaysValue.WorkDays && isWorkDay) ||
                       (t.Days.GetValueOrDefault() == RoutineTaskDaysValue.WeekEnds && !isWorkDay))
                 )
-                .Where(
-                    t =>
-                        t.Time.GetValueOrDefault() == RoutineTaskTimeValue.Evening && DateTime.Now.Hour > 18 ||
-                        t.Time.GetValueOrDefault() == RoutineTaskTimeValue.Afternoon &&
-                        DateTime.Now.Hour > 12 ||
-                        t.Time.GetValueOrDefault() == RoutineTaskTimeValue.Morning && DateTime.Now.Hour < 12));
+                .Where(t => t.Time.GetValueOrDefault() == time));
 
-            var time = DateTime.Now.Hour > 18
-                ? RoutineTaskTimeValue.Evening
-                : (DateTime.Now.Hour > 12 ? RoutineTaskTimeValue.Afternoon : RoutineTaskTimeValue.Morning);
-
-            await _scheduler.ConfigureScheduleAsync(routine, owner, time, true, cancellationToken);
+            await _scheduler.ConfigureScheduleAsync(routine, owner, time, cancellationToken);
 
             if (!tasks.Any())
                 return false;
@@ -641,6 +658,5 @@ namespace RotinaBot
         }
 
         #endregion
-
     }
 }

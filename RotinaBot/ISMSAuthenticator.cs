@@ -4,8 +4,9 @@ using RotinaBot.Documents;
 
 namespace RotinaBot
 {
-    public interface ISMSSender
+    public interface ISMSAuthenticator
     {
+        string GenerateAuthenticationCode();
         Task SendSMSAsync(Routine routine, CancellationToken cancellationToken);
     }
 }

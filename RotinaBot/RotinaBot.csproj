@@ -78,7 +78,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Documents\PhoneNumberRegistrationStatus.cs" />
-    <Compile Include="ISmsSender.cs" />
+    <Compile Include="ISMSAuthenticator.cs" />
     <Compile Include="PlainTextMessageReceiver.cs" />
     <Compile Include="Receivers\ConfirmPhoneNumber.cs" />
     <Compile Include="Receivers\SavePhoneNumber.cs" />
@@ -104,7 +104,7 @@
     <Compile Include="RotinaBot.cs" />
     <Compile Include="ServiceProvider.cs" />
     <Compile Include="Settings.cs" />
-    <Compile Include="SMSSender.cs" />
+    <Compile Include="SMSAuthenticator.cs" />
     <Compile Include="Startup.cs" />
     <Compile Include="Receivers\FinishTaskCreation.cs" />
     <Compile Include="Receivers\SendTasksForTheDay.cs" />

@@ -13,9 +13,17 @@ namespace RotinaBot.Receivers
 
         public override async Task ReceiveAsync(Message message, CancellationToken cancellationToken)
         {
-            await Bot.SavePhoneNumberAsync(message.From, message.Content, cancellationToken);
-            await Bot.SendPhoneNumberAuthenticationCodeAsync(message.From, cancellationToken);
-            Bot.StateManager.SetState(message.From, Bot.Settings.States.WaitingSMSCode);
+            if (await Bot.SavePhoneNumberAsync(message.From, message.Content, cancellationToken))
+            {
+
+                Bot.StateManager.SetState(message.From, Bot.Settings.States.WaitingSMSCode);
+
+                await Bot.SendPhoneNumberAuthenticationCodeAsync(message.From, cancellationToken);
+            }
+            else
+            {
+                await Bot.InformPhoneNumberIsWrongAsync(message.From, cancellationToken);
+            }
         }
     }
 }

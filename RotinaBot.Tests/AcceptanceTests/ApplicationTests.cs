@@ -140,7 +140,7 @@ namespace RotinaBot.Tests.AcceptanceTests
             // Send messages to the bot
             var select = await SendHiAsync();
 
-            var option = select.Options.Single(o => o.Value.ToString() == Settings.Commands.ShowAll);
+            var option = select.Options.Single(o => o.Value.ToString() == Settings.Commands.Week);
             await Tester.SendMessageAsync(option.Value.ToString());
 
             // Wait for the answer from the bot
@@ -196,7 +196,7 @@ namespace RotinaBot.Tests.AcceptanceTests
             // Send messages to the bot
             var select = await SendHiAsync();
 
-            var option = select.Options.Single(o => o.Value.ToString() == Settings.Commands.Show);
+            var option = select.Options.Single(o => o.Value.ToString() == Settings.Commands.Day);
             await Tester.SendMessageAsync(option.Value.ToString());
 
             // Wait for the answer from the bot
@@ -297,7 +297,7 @@ namespace RotinaBot.Tests.AcceptanceTests
 
             // Request the bot to show the routine for the day
 
-            await Tester.SendMessageAsync(Settings.Commands.Show);
+            await Tester.SendMessageAsync(Settings.Commands.Day);
 
             var response = await Tester.ReceiveMessageAsync();
 
@@ -308,7 +308,7 @@ namespace RotinaBot.Tests.AcceptanceTests
 
             // Request the bot to show the routine for the week
 
-            await Tester.SendMessageAsync(Settings.Commands.ShowAll);
+            await Tester.SendMessageAsync(Settings.Commands.Week);
 
             response = await Tester.ReceiveMessageAsync();
 
@@ -337,7 +337,7 @@ namespace RotinaBot.Tests.AcceptanceTests
 
             // Request the bot to show the routine for the day
 
-            await Tester.SendMessageAsync(Settings.Commands.Show);
+            await Tester.SendMessageAsync(Settings.Commands.Day);
 
             var response = await Tester.ReceiveMessageAsync();
 
@@ -376,7 +376,7 @@ namespace RotinaBot.Tests.AcceptanceTests
 
             // Request the bot to show the routine for the day
 
-            await Tester.SendMessageAsync(Settings.Commands.Show);
+            await Tester.SendMessageAsync(Settings.Commands.Day);
 
             var response = await Tester.ReceiveMessageAsync();
 
@@ -415,7 +415,7 @@ namespace RotinaBot.Tests.AcceptanceTests
 
             // Request the bot to show the routine for the day
 
-            await Tester.SendMessageAsync(Settings.Commands.Show);
+            await Tester.SendMessageAsync(Settings.Commands.Day);
 
             var response = await Tester.ReceiveMessageAsync();
 
@@ -440,7 +440,7 @@ namespace RotinaBot.Tests.AcceptanceTests
 
             // Request the bot to show the routine for the day again
 
-            await Tester.SendMessageAsync(Settings.Commands.Show);
+            await Tester.SendMessageAsync(Settings.Commands.Day);
 
             response = await Tester.ReceiveMessageAsync();
 
@@ -475,7 +475,7 @@ namespace RotinaBot.Tests.AcceptanceTests
 
             // Request the bot to show the routine for the day
 
-            await Tester.SendMessageAsync(Settings.Commands.Show);
+            await Tester.SendMessageAsync(Settings.Commands.Day);
 
             var response = await Tester.ReceiveMessageAsync();
 
@@ -614,10 +614,78 @@ namespace RotinaBot.Tests.AcceptanceTests
     }
 
     [TestFixture]
-    public class TestApplicationWithFakeBucketNoSchedulerAndFakeSMSSender : BaseTestFixture<FakeServiceProviderWithFakeBucketNoSchedulerAndFakeSMSSender>
+    public class TestApplicationWithFakeBucketNoSchedulerAndFakeSMSSender :
+        BaseTestFixture<FakeServiceProviderWithFakeBucketNoSchedulerAndFakeSMSSender>
     {
         [Test]
-        public async Task RegisterPhoneNumberWithSuccess()
+
+        [TestCase("31955557777")]
+        [TestCase("31-955557777")]
+        [TestCase("31-95555-7777")]
+        [TestCase("3195555-7777")]
+        [TestCase("(31)95555-7777")]
+        [TestCase("(31)955557777")]
+        [TestCase("(31)-95555-7777")]
+        [TestCase("3155557777")]
+        [TestCase("31-55557777")]
+        [TestCase("31-5555-7777")]
+        [TestCase("315555-7777")]
+        [TestCase("(31)5555-7777")]
+        [TestCase("(31)55557777")]
+        [TestCase("(31)-5555-7777")]
+        public async Task RegisterPhoneNumberWithSuccess(string phoneNumber)
+        {
+            // Send hi to the bot
+            await Tester.SendMessageAsync("Oi");
+
+            // Wait for the answer from the bot
+            var response = await Tester.ReceiveMessageAsync();
+            response.ShouldNotBeNull();
+
+            var select = response.Content as Select;
+            var actual = select?.Text;
+
+
+            // Receive phone number registration offer
+
+            var expected = Settings.Phraseology.PhoneNumberRegistrationOffer;
+            expected.ShouldNotBeNull();
+
+            actual.ShouldBe(expected);
+
+            // Send phone number
+
+            await Tester.SendMessageAsync(phoneNumber);
+            response = await Tester.ReceiveMessageAsync();
+            response.ShouldNotBeNull();
+
+            var document = response.Content as PlainText;
+            actual = document?.Text;
+
+            expected = Settings.Phraseology.InformSMSCode;
+            expected.ShouldNotBeNull();
+
+            actual.ShouldBe(expected);
+
+            // Send SMS code
+            await Tester.SendMessageAsync(Tester.GetService<ISMSAuthenticator>().GenerateAuthenticationCode());
+
+            // Assert registration was okay
+
+            response = await Tester.ReceiveMessageAsync();
+            response.ShouldNotBeNull();
+
+            document = response.Content as PlainText;
+            actual = document?.Text;
+
+            expected = Settings.Phraseology.RegistrationOkay;
+            expected.ShouldNotBeNull();
+
+            actual.ShouldBe(expected);
+        }
+
+        [Test]
+        public async Task RegisterPhoneNumberWithWrongCode()
         {
             // Send hi to the bot
             await Tester.SendMessageAsync("Oi");
@@ -651,17 +719,55 @@ namespace RotinaBot.Tests.AcceptanceTests
 
             actual.ShouldBe(expected);
 
-            // SMS code will be automatically sent by FakeSMSSender
+            // Send Wrong SMS code
+            await Tester.SendMessageAsync(Tester.GetService<ISMSAuthenticator>().GenerateAuthenticationCode() + "9");
 
             // Assert registration was okay
 
             response = await Tester.ReceiveMessageAsync();
             response.ShouldNotBeNull();
 
-            document = response.Content as PlainText;
+            select = response.Content as Select;
+            actual = select?.Text;
+
+            expected = Settings.Phraseology.RegistrationFailed;
+            expected.ShouldNotBeNull();
+
+            actual.ShouldBe(expected);
+        }
+
+
+        [Test]
+        public async Task RegisterPhoneNumberWithWrongNumber()
+        {
+            // Send hi to the bot
+            await Tester.SendMessageAsync("Oi");
+
+            // Wait for the answer from the bot
+            var response = await Tester.ReceiveMessageAsync();
+            response.ShouldNotBeNull();
+
+            var select = response.Content as Select;
+            var actual = select?.Text;
+
+
+            // Receive phone number registration offer
+
+            var expected = Settings.Phraseology.PhoneNumberRegistrationOffer;
+            expected.ShouldNotBeNull();
+
+            actual.ShouldBe(expected);
+
+            // Send phone number
+
+            await Tester.SendMessageAsync("5");
+            response = await Tester.ReceiveMessageAsync();
+            response.ShouldNotBeNull();
+
+            var document = response.Content as PlainText;
             actual = document?.Text;
 
-            expected = Settings.Phraseology.RegistrationOkay;
+            expected = Settings.Phraseology.ThisIsNotAValidPhoneNumber;
             expected.ShouldNotBeNull();
 
             actual.ShouldBe(expected);

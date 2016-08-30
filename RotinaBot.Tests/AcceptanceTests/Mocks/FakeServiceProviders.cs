@@ -28,7 +28,7 @@ namespace RotinaBot.Tests.AcceptanceTests.Mocks
         {
             RegisterTestService<IBucketExtension, FakeBucketExtension>();
             RegisterTestService<ISchedulerExtension, NoSchedulerExtension>();
-            RegisterTestService<ISMSSender, FakeSMSSender>();
+            RegisterTestService<ISMSAuthenticator, FakeSMSAuthenticator>();
         }
     }
 

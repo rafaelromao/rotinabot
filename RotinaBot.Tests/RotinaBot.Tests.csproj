@@ -83,7 +83,7 @@
     <Compile Include="AcceptanceTests\ApplicationTests.cs" />
     <Compile Include="AcceptanceTests\Base\TestClass.cs" />
     <Compile Include="AcceptanceTests\Base\TestServiceProvider.cs" />
-    <Compile Include="AcceptanceTests\Mocks\FakeSMSSender.cs" />
+    <Compile Include="AcceptanceTests\Mocks\FakeSMSAuthenticator.cs" />
     <Compile Include="AcceptanceTests\Mocks\FakeBucketExtension.cs" />
     <Compile Include="AcceptanceTests\Mocks\FakeSchedulerExtension.cs" />
     <Compile Include="AcceptanceTests\Mocks\FakeServiceProviders.cs" />

@@ -2,7 +2,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Lime.Protocol;
-using Takenet.MessagingHub.Client;
 
 namespace RotinaBot.Receivers
 {
@@ -16,6 +15,9 @@ namespace RotinaBot.Receivers
         {
             try
             {
+                if (Bot.StateManager.GetState(message.From) == Bot.Settings.States.WaitingPhoneNumber)
+                    return;
+
                 await Bot.SetNameForNewTaskAsync(message.From, message.Content, cancellationToken);
                 await Bot.SendTaskDaysRequestAsync(message.From, cancellationToken);
                 Bot.StateManager.SetState(message.From, Bot.Settings.States.WaitingTaskDays);
