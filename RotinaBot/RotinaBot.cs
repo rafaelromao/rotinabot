@@ -51,20 +51,18 @@ namespace RotinaBot
                     return routine;
 
                 var masterOwnerIdentity = await _bucket.GetAsync<IdentityDocument>(routine.PhoneNumber, cancellationToken);
-                if (masterOwnerIdentity != null)
+                if (masterOwnerIdentity == null)
+                    return routine;
+
+                var ownerRoutine = await _bucket.GetAsync<Routine>(masterOwnerIdentity.Value.ToString(), cancellationToken);
+                if (ownerRoutine != routine && routine.Tasks.Length > 0)
                 {
-                    var ownerRoutine = await _bucket.GetAsync<Routine>(masterOwnerIdentity.Value.ToString(), cancellationToken);
-                    if (ownerRoutine != routine && routine.Tasks.Length > 0)
-                    {
-                        ownerRoutine.Tasks = ownerRoutine.Tasks.Concat(routine.Tasks).ToArray();
-                        routine.Tasks = new RoutineTask[0];
-                    }
-                    routine = ownerRoutine;
+                    ownerRoutine.Tasks = ownerRoutine.Tasks.Concat(routine.Tasks).ToArray();
+                    routine.Tasks = new RoutineTask[0];
+                    await SetRoutineAsync(owner, routine, cancellationToken);
                 }
-                else
-                {
-                    await _bucket.SetAsync(routine.PhoneNumber, new IdentityDocument { Value = owner.ToIdentity() }, TimeSpan.FromDays(short.MaxValue), cancellationToken);
-                }
+                routine = ownerRoutine;
+
                 return routine;
             }
             catch
@@ -76,9 +74,15 @@ namespace RotinaBot
         private async Task SetRoutineAsync(Node owner, Routine routine, CancellationToken cancellationToken)
         {
             await _bucket.SetAsync(owner.ToIdentity().ToString(), routine, TimeSpan.FromDays(short.MaxValue), cancellationToken);
-            var proof = await _bucket.GetAsync<Routine>(owner.ToIdentity().ToString(), cancellationToken);
-            if (proof.Tasks.Length != routine.Tasks.Length)
-                throw new Exception();
+
+            if (routine.PhoneNumberRegistrationStatus != PhoneNumberRegistrationStatus.Confirmed)
+                return;
+
+            var masterOwnerIdentity = await _bucket.GetAsync<IdentityDocument>(routine.PhoneNumber, cancellationToken);
+            if (masterOwnerIdentity != null)
+                return;
+
+            await _bucket.SetAsync(routine.PhoneNumber, new IdentityDocument { Value = owner.ToIdentity() }, TimeSpan.FromDays(short.MaxValue), cancellationToken);
         }
 
         private static RoutineTask[] SortRoutineTasks(IEnumerable<RoutineTask> tasks)

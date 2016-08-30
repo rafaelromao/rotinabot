@@ -758,7 +758,7 @@ namespace RotinaBot.Tests.AcceptanceTests
         [Test]
         public async Task RegisterPhoneNumberWithSuccessAndCheckItIsNotOfferedAnymore()
         {
-            await RegisterPhoneNumberAsync("31955557777", true, false);
+            await RegisterPhoneNumberAsync("31955557777", true, true);
 
             // Send hi to the bot
             await Tester.SendMessageAsync("Oi");
@@ -783,11 +783,11 @@ namespace RotinaBot.Tests.AcceptanceTests
         {
             await ShowThereIsNothingForTheWeekAsync();
 
-            await RegisterPhoneNumberAsync("31955557777", true, false);
+            await RegisterPhoneNumberAsync("31955557777", true, true);
 
             await CreateANewTaskFromTaskNameAsync("Nova tarefa");
 
-            await RegisterPhoneNumberAsync("31955557777", true, false, true);
+            await RegisterPhoneNumberAsync("31955557777", true, true, true);
 
             await CheckASingleTaskIsListedAsync("Nova tarefa", true);
         }
