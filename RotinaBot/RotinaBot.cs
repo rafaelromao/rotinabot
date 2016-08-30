@@ -47,7 +47,7 @@ namespace RotinaBot
                     await _bucket.SetAsync(owner.ToIdentity().ToString(), routine, TimeSpan.FromDays(short.MaxValue), cancellationToken);
                 }
 
-                if (routine.PhoneNumberRegistrationStatus == PhoneNumberRegistrationStatus.Confirmed || allowSlaveRoutine)
+                if (routine.PhoneNumberRegistrationStatus != PhoneNumberRegistrationStatus.Confirmed || allowSlaveRoutine)
                     return routine;
 
                 var masterOwnerIdentity = await _bucket.GetAsync<IdentityDocument>(routine.PhoneNumber, cancellationToken);
