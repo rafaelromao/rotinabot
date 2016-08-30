@@ -19,9 +19,9 @@ namespace RotinaBot.Tests.AcceptanceTests
             if (!useSecondaryAccount)
                 return Tester;
 
-            var options = Options<FakeServiceProviderWithFakeBucketAndNoScheduler>().Clone();
-            options.TesterAccountIndex = 1;
-            return new ApplicationTester(options);
+            var secondaryOptions = Options<TServiceProvider>().Clone();
+            secondaryOptions.TesterAccountIndex = 1;
+            return new ApplicationTester(secondaryOptions);
         }
 
         protected async Task<Select> SendHiAsync()
@@ -40,9 +40,7 @@ namespace RotinaBot.Tests.AcceptanceTests
 
             if (actual != Settings.Phraseology.InitialMessage)
             {
-
                 // Receive phone number registration offer
-
                 expected = Settings.Phraseology.PhoneNumberRegistrationOffer;
                 expected.ShouldNotBeNull();
 
@@ -61,6 +59,8 @@ namespace RotinaBot.Tests.AcceptanceTests
                 expected.ShouldNotBeNull();
 
                 actual.ShouldBe(expected);
+
+                await Tester.SendMessageAsync("Oi");
 
                 response = await Tester.ReceiveMessageAsync();
                 response.ShouldNotBeNull();
