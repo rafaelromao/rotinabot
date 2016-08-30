@@ -10,6 +10,7 @@ namespace RotinaBot.Tests.AcceptanceTests.Mocks
         {
             RegisterTestService<IBucketExtension, FakeBucketExtension>();
             RegisterTestService<ISchedulerExtension, NoSchedulerExtension>();
+            RegisterTestService<ISMSAuthenticator, FakeSMSAuthenticator>();
         }
     }
 
@@ -19,17 +20,7 @@ namespace RotinaBot.Tests.AcceptanceTests.Mocks
         {
             RegisterTestService<IBucketExtension, FakeBucketExtension>();
             RegisterTestService<ISchedulerExtension, FakeSchedulerExtension>();
-        }
-    }
-
-    public class FakeServiceProviderWithFakeBucketNoSchedulerAndFakeSMSSender : TestServiceProvider
-    {
-        static FakeServiceProviderWithFakeBucketNoSchedulerAndFakeSMSSender()
-        {
-            RegisterTestService<IBucketExtension, FakeBucketExtension>();
-            RegisterTestService<ISchedulerExtension, NoSchedulerExtension>();
             RegisterTestService<ISMSAuthenticator, FakeSMSAuthenticator>();
         }
     }
-
 }

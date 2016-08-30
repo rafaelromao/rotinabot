@@ -55,7 +55,7 @@ namespace RotinaBot
                     return routine;
 
                 var ownerRoutine = await _bucket.GetAsync<Routine>(masterOwnerIdentity.Value.ToString(), cancellationToken);
-                if (ownerRoutine != routine && routine.Tasks.Length > 0)
+                if (ownerRoutine != routine && routine.Tasks?.Length > 0)
                 {
                     ownerRoutine.Tasks = ownerRoutine.Tasks.Concat(routine.Tasks).ToArray();
                     routine.Tasks = new RoutineTask[0];

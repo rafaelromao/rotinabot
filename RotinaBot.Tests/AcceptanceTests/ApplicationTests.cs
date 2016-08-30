@@ -16,14 +16,12 @@ namespace RotinaBot.Tests.AcceptanceTests
     {
         private ApplicationTester GetTester(bool useSecondaryAccount)
         {
-            var tester = Tester;
-            if (useSecondaryAccount)
-            {
-                var options = Options<FakeServiceProviderWithFakeBucketNoSchedulerAndFakeSMSSender>().Clone();
-                options.TesterAccountIndex = 1;
-                tester = new ApplicationTester(options);
-            }
-            return tester;
+            if (!useSecondaryAccount)
+                return Tester;
+
+            var options = Options<FakeServiceProviderWithFakeBucketAndNoScheduler>().Clone();
+            options.TesterAccountIndex = 1;
+            return new ApplicationTester(options);
         }
 
         protected async Task<Select> SendHiAsync()
@@ -175,14 +173,14 @@ namespace RotinaBot.Tests.AcceptanceTests
             var tester = GetTester(useSecondaryAccount);
 
             // Send hi to the bot
-            await tester.SendMessageAsync("Oi");
+            await tester.SendMessageAsync(Settings.Commands.Register);
 
             // Wait for the answer from the bot
             var response = await tester.ReceiveMessageAsync();
             response.ShouldNotBeNull();
 
             var select = response.Content as Select;
-            var actual = @select?.Text;
+            var actual = select?.Text;
 
 
             // Receive phone number registration offer
@@ -280,8 +278,6 @@ namespace RotinaBot.Tests.AcceptanceTests
 
             document?.Text.Contains(taskName).ShouldBeTrue();
         }
-
-
     }
 
     [TestFixture]
@@ -720,7 +716,7 @@ namespace RotinaBot.Tests.AcceptanceTests
 
     [TestFixture]
     public class TestApplicationWithFakeBucketNoSchedulerAndFakeSMSSender :
-        BaseTestFixture<FakeServiceProviderWithFakeBucketNoSchedulerAndFakeSMSSender>
+        BaseTestFixture<FakeServiceProviderWithFakeBucketAndNoScheduler>
     {
         [Test]
 
