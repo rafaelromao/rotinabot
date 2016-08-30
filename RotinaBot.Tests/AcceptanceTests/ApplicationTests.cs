@@ -14,6 +14,18 @@ namespace RotinaBot.Tests.AcceptanceTests
     public class BaseTestFixture<TServiceProvider> : Base.TestClass<TServiceProvider>
         where TServiceProvider : ApplicationTesterServiceProvider
     {
+        private ApplicationTester GetTester(bool useSecondaryAccount)
+        {
+            var tester = Tester;
+            if (useSecondaryAccount)
+            {
+                var options = Options<FakeServiceProviderWithFakeBucketNoSchedulerAndFakeSMSSender>().Clone();
+                options.TesterAccountIndex = 1;
+                tester = new ApplicationTester(options);
+            }
+            return tester;
+        }
+
         protected async Task<Select> SendHiAsync()
         {
             // Send hi to the bot
@@ -157,6 +169,119 @@ namespace RotinaBot.Tests.AcceptanceTests
             // Assert that the answer from the bot is the expected one
             actual.ShouldBe(expected);
         }
+
+        protected async Task RegisterPhoneNumberAsync(string phoneNumber, bool isValidPhoneNumber, bool useValidAuthenticationCode, bool useSecondaryAccount = false)
+        {
+            var tester = GetTester(useSecondaryAccount);
+
+            // Send hi to the bot
+            await tester.SendMessageAsync("Oi");
+
+            // Wait for the answer from the bot
+            var response = await tester.ReceiveMessageAsync();
+            response.ShouldNotBeNull();
+
+            var select = response.Content as Select;
+            var actual = @select?.Text;
+
+
+            // Receive phone number registration offer
+
+            var expected = Settings.Phraseology.PhoneNumberRegistrationOffer;
+            expected.ShouldNotBeNull();
+
+            actual.ShouldBe(expected);
+
+            // Send phone number
+
+            await tester.SendMessageAsync(phoneNumber);
+            response = await tester.ReceiveMessageAsync();
+            response.ShouldNotBeNull();
+
+            var document = response.Content as PlainText;
+            actual = document?.Text;
+
+            if (isValidPhoneNumber)
+            {
+                expected = Settings.Phraseology.InformSMSCode;
+                expected.ShouldNotBeNull();
+
+                actual.ShouldBe(expected);
+
+                // Send SMS code
+                if (useValidAuthenticationCode)
+                {
+                    await tester.SendMessageAsync(tester.GetService<ISMSAuthenticator>().GenerateAuthenticationCode());
+
+                    // Assert registration was okay
+
+                    response = await tester.ReceiveMessageAsync();
+                    response.ShouldNotBeNull();
+
+                    document = response.Content as PlainText;
+                    actual = document?.Text;
+
+                    expected = Settings.Phraseology.RegistrationOkay;
+                    expected.ShouldNotBeNull();
+
+                    actual.ShouldBe(expected);
+                }
+                else
+                {
+                    // Send Wrong SMS code
+                    await tester.SendMessageAsync(tester.GetService<ISMSAuthenticator>().GenerateAuthenticationCode() + "9");
+
+                    // Assert registration was failed
+
+                    response = await tester.ReceiveMessageAsync();
+                    response.ShouldNotBeNull();
+
+                    select = response.Content as Select;
+                    actual = select?.Text;
+
+                    expected = Settings.Phraseology.RegistrationFailed;
+                    expected.ShouldNotBeNull();
+
+                    actual.ShouldBe(expected);
+                }
+            }
+            else
+            {
+                expected = Settings.Phraseology.ThisIsNotAValidPhoneNumber;
+                expected.ShouldNotBeNull();
+
+                actual.ShouldBe(expected);
+            }
+        }
+
+        protected async Task CheckASingleTaskIsListedAsync(string taskName, bool useSecondaryAccount)
+        {
+            var tester = GetTester(useSecondaryAccount);
+
+            // Request the bot to show the routine for the day
+
+            await tester.SendMessageAsync(Settings.Commands.Day);
+
+            var response = await tester.ReceiveMessageAsync();
+
+            var select = response.Content as Select;
+            select.ShouldNotBeNull();
+
+            select?.Options.Any(o => o.Text.StartsWith(taskName)).ShouldBeTrue();
+
+            // Request the bot to show the routine for the week
+
+            await tester.SendMessageAsync(Settings.Commands.Week);
+
+            response = await tester.ReceiveMessageAsync();
+
+            var document = response.Content as PlainText;
+            document.ShouldNotBeNull();
+
+            document?.Text.Contains(taskName).ShouldBeTrue();
+        }
+
+
     }
 
     [TestFixture]
@@ -295,27 +420,7 @@ namespace RotinaBot.Tests.AcceptanceTests
 
             await CreateANewTaskFromTaskNameAsync(taskName);
 
-            // Request the bot to show the routine for the day
-
-            await Tester.SendMessageAsync(Settings.Commands.Day);
-
-            var response = await Tester.ReceiveMessageAsync();
-
-            var select = response.Content as Select;
-            select.ShouldNotBeNull();
-
-            select?.Options.Any(o => o.Text.StartsWith(taskName)).ShouldBeTrue();
-
-            // Request the bot to show the routine for the week
-
-            await Tester.SendMessageAsync(Settings.Commands.Week);
-
-            response = await Tester.ReceiveMessageAsync();
-
-            var document = response.Content as PlainText;
-            document.ShouldNotBeNull();
-
-            document?.Text.Contains(taskName).ShouldBeTrue();
+            await CheckASingleTaskIsListedAsync(taskName, false);
         }
 
         [Test]
@@ -635,58 +740,26 @@ namespace RotinaBot.Tests.AcceptanceTests
         [TestCase("(31)-5555-7777")]
         public async Task RegisterPhoneNumberWithSuccess(string phoneNumber)
         {
-            // Send hi to the bot
-            await Tester.SendMessageAsync("Oi");
-
-            // Wait for the answer from the bot
-            var response = await Tester.ReceiveMessageAsync();
-            response.ShouldNotBeNull();
-
-            var select = response.Content as Select;
-            var actual = select?.Text;
-
-
-            // Receive phone number registration offer
-
-            var expected = Settings.Phraseology.PhoneNumberRegistrationOffer;
-            expected.ShouldNotBeNull();
-
-            actual.ShouldBe(expected);
-
-            // Send phone number
-
-            await Tester.SendMessageAsync(phoneNumber);
-            response = await Tester.ReceiveMessageAsync();
-            response.ShouldNotBeNull();
-
-            var document = response.Content as PlainText;
-            actual = document?.Text;
-
-            expected = Settings.Phraseology.InformSMSCode;
-            expected.ShouldNotBeNull();
-
-            actual.ShouldBe(expected);
-
-            // Send SMS code
-            await Tester.SendMessageAsync(Tester.GetService<ISMSAuthenticator>().GenerateAuthenticationCode());
-
-            // Assert registration was okay
-
-            response = await Tester.ReceiveMessageAsync();
-            response.ShouldNotBeNull();
-
-            document = response.Content as PlainText;
-            actual = document?.Text;
-
-            expected = Settings.Phraseology.RegistrationOkay;
-            expected.ShouldNotBeNull();
-
-            actual.ShouldBe(expected);
+            await RegisterPhoneNumberAsync(phoneNumber, true, true);
         }
 
         [Test]
         public async Task RegisterPhoneNumberWithWrongCode()
         {
+            await RegisterPhoneNumberAsync("31955557777", true, false);
+        }
+
+        [Test]
+        public async Task RegisterPhoneNumberWithWrongNumber()
+        {
+            await RegisterPhoneNumberAsync("5", false, true);
+        }
+
+        [Test]
+        public async Task RegisterPhoneNumberWithSuccessAndCheckItIsNotOfferedAnymore()
+        {
+            await RegisterPhoneNumberAsync("31955557777", true, false);
+
             // Send hi to the bot
             await Tester.SendMessageAsync("Oi");
 
@@ -697,80 +770,26 @@ namespace RotinaBot.Tests.AcceptanceTests
             var select = response.Content as Select;
             var actual = select?.Text;
 
+            // Receive initial menu
 
-            // Receive phone number registration offer
-
-            var expected = Settings.Phraseology.PhoneNumberRegistrationOffer;
-            expected.ShouldNotBeNull();
-
-            actual.ShouldBe(expected);
-
-            // Send phone number
-
-            await Tester.SendMessageAsync("31955557777");
-            response = await Tester.ReceiveMessageAsync();
-            response.ShouldNotBeNull();
-
-            var document = response.Content as PlainText;
-            actual = document?.Text;
-
-            expected = Settings.Phraseology.InformSMSCode;
-            expected.ShouldNotBeNull();
-
-            actual.ShouldBe(expected);
-
-            // Send Wrong SMS code
-            await Tester.SendMessageAsync(Tester.GetService<ISMSAuthenticator>().GenerateAuthenticationCode() + "9");
-
-            // Assert registration was okay
-
-            response = await Tester.ReceiveMessageAsync();
-            response.ShouldNotBeNull();
-
-            select = response.Content as Select;
-            actual = select?.Text;
-
-            expected = Settings.Phraseology.RegistrationFailed;
+            var expected = Settings.Phraseology.InitialMessage;
             expected.ShouldNotBeNull();
 
             actual.ShouldBe(expected);
         }
 
-
         [Test]
-        public async Task RegisterPhoneNumberWithWrongNumber()
+        public async Task RegisterPhoneNumberWithSuccessUsingTwoAccounts()
         {
-            // Send hi to the bot
-            await Tester.SendMessageAsync("Oi");
+            await ShowThereIsNothingForTheWeekAsync();
 
-            // Wait for the answer from the bot
-            var response = await Tester.ReceiveMessageAsync();
-            response.ShouldNotBeNull();
+            await RegisterPhoneNumberAsync("31955557777", true, false);
 
-            var select = response.Content as Select;
-            var actual = select?.Text;
+            await CreateANewTaskFromTaskNameAsync("Nova tarefa");
 
+            await RegisterPhoneNumberAsync("31955557777", true, false, true);
 
-            // Receive phone number registration offer
-
-            var expected = Settings.Phraseology.PhoneNumberRegistrationOffer;
-            expected.ShouldNotBeNull();
-
-            actual.ShouldBe(expected);
-
-            // Send phone number
-
-            await Tester.SendMessageAsync("5");
-            response = await Tester.ReceiveMessageAsync();
-            response.ShouldNotBeNull();
-
-            var document = response.Content as PlainText;
-            actual = document?.Text;
-
-            expected = Settings.Phraseology.ThisIsNotAValidPhoneNumber;
-            expected.ShouldNotBeNull();
-
-            actual.ShouldBe(expected);
+            await CheckASingleTaskIsListedAsync("Nova tarefa", true);
         }
     }
 }
