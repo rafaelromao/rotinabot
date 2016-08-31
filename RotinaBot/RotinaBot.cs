@@ -419,7 +419,7 @@ namespace RotinaBot
             var routine = await GetRoutineAsync(owner, false, cancellationToken);
             var task = routine.Tasks.Last();
             task.IsActive = true;
-            await _scheduler.ConfigureScheduleAsync(routine, owner, task.Time.GetValueOrDefault(), cancellationToken);
+            await _scheduler.ConfigureScheduleAsync(routine, task.Time.GetValueOrDefault(), cancellationToken);
             await SetRoutineAsync(routine, cancellationToken);
         }
 
@@ -559,7 +559,9 @@ namespace RotinaBot
                 )
                 .Where(t => t.Time.GetValueOrDefault() == time));
 
-            await _scheduler.ConfigureScheduleAsync(routine, owner, time, cancellationToken);
+            await _scheduler.ConfigureScheduleAsync(routine, time, cancellationToken);
+
+            await SetRoutineAsync(routine, cancellationToken);
 
             if (!tasks.Any())
                 return false;

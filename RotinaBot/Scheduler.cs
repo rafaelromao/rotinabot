@@ -22,7 +22,7 @@ namespace RotinaBot
             _delegation = delegation;
         }
 
-        public async Task ConfigureScheduleAsync(Routine routine, Node from, RoutineTaskTimeValue time, CancellationToken cancellationToken)
+        public async Task ConfigureScheduleAsync(Routine routine, RoutineTaskTimeValue time, CancellationToken cancellationToken)
         {
             // Will send a message to itself, the next day only, reminding it to send a message with the routine for the given days and time for each client
             var shouldScheduleAtMorning = time == RoutineTaskTimeValue.Morning &&
@@ -48,7 +48,7 @@ namespace RotinaBot
                 {
                     Id = Guid.NewGuid().ToString(),
                     To = identity,
-                    Content = new IdentityDocument(from.ToIdentity().ToString())
+                    Content = new IdentityDocument(routine.Owner.ToString())
                 };
                 var isBeforeMorning = DateTime.Now.Hour < 6;
                 var isBeforeAfternoon = DateTime.Now.Hour < 12;

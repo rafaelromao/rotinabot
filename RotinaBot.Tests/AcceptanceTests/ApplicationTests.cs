@@ -699,19 +699,20 @@ namespace RotinaBot.Tests.AcceptanceTests
             const string taskName = "Nova tarefa";
 
             var hour = DateTime.Now.Hour;
-            var time = hour > 18
+            var time = hour >= 18
                 ? RoutineTaskTimeValue.Evening
-                : (hour > 12 ? RoutineTaskTimeValue.Afternoon : RoutineTaskTimeValue.Morning);
+                : (hour >= 12 ? RoutineTaskTimeValue.Afternoon : RoutineTaskTimeValue.Morning);
             await CreateANewTaskFromTaskNameAsync(taskName, time: time);
 
             // The bot should show the next tasks
 
             var response = await Tester.ReceiveMessageAsync();
+            response.ShouldNotBeNull();
 
             var select = response.Content as Select;
             select.ShouldNotBeNull();
 
-            select.Text.ShouldBe(Settings.Phraseology.HereAreYourNextTasks);
+            select?.Text.ShouldBe(Settings.Phraseology.HereAreYourNextTasks);
         }
     }
 
