@@ -21,6 +21,7 @@ namespace RotinaBot.Tests.AcceptanceTests
 
             var secondaryOptions = Options<TServiceProvider>().Clone();
             secondaryOptions.TesterAccountIndex = 1;
+            secondaryOptions.InstantiateApplication = false;
             return new ApplicationTester(secondaryOptions);
         }
 
