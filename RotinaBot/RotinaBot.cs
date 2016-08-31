@@ -533,19 +533,15 @@ namespace RotinaBot
             tasks.ForEach(task => text.AppendLine($"- {task.Name}"));
         }
 
-        public async Task<bool> SendNextTasksAsync(Node owner, Document content, CancellationToken cancellationToken)
+        public async Task<bool> SendNextTasksAsync(Node owner, CancellationToken cancellationToken)
         {
-            var identity = content as IdentityDocument;
-            if (identity == null)
-                return false;
-
             var time = DateTime.Now.Hour >= 18
                 ? RoutineTaskTimeValue.Evening
                 : DateTime.Now.Hour >= 12 
                   ? RoutineTaskTimeValue.Afternoon 
                   : RoutineTaskTimeValue.Morning;
 
-            var routine = await GetRoutineAsync(Node.Parse(identity.ToString()), false, cancellationToken);
+            var routine = await GetRoutineAsync(owner, false, cancellationToken);
 
             var isWorkDay = DateTime.Today.DayOfWeek != DayOfWeek.Saturday &&
                             DateTime.Today.DayOfWeek != DayOfWeek.Sunday;
