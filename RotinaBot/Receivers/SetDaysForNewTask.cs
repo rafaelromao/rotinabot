@@ -2,7 +2,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Lime.Protocol;
-using Takenet.MessagingHub.Client;
 
 namespace RotinaBot.Receivers
 {
@@ -20,7 +19,7 @@ namespace RotinaBot.Receivers
                 await Bot.SendTaskTimeRequestAsync(message.From, cancellationToken);
                 Bot.StateManager.SetState(message.From, Bot.Settings.States.WaitingTaskTime);
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 await Bot.InformAnOptionShallBeChosenAsync(message.From, cancellationToken);
             }

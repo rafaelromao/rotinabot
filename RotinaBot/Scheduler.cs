@@ -53,15 +53,12 @@ namespace RotinaBot
                 var isBeforeMorning = DateTime.Now.Hour < 6;
                 var isBeforeAfternoon = DateTime.Now.Hour < 12;
                 var isBeforeEvening = DateTime.Now.Hour < 18;
-                var firstMorningSchedule = isBeforeMorning
-                    ? new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 6, 0, 0)
-                    : new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day + 1, 6, 0, 0);
-                var firstAfternoonSchedule = isBeforeAfternoon
-                    ? new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 12, 0, 0)
-                    : new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day + 1, 12, 0, 0);
-                var firstEveningSchedule = isBeforeEvening
-                    ? new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 18, 0, 0)
-                    : new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day + 1, 18, 0, 0);
+
+                var today = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 0, 0, 0);
+
+                var firstMorningSchedule = isBeforeMorning ? today.AddHours(6) : today.AddHours(6).AddDays(1);
+                var firstAfternoonSchedule = isBeforeAfternoon ? today.AddHours(12) : today.AddHours(12).AddDays(1);
+                var firstEveningSchedule = isBeforeEvening ? today.AddHours(18) : today.AddHours(18).AddDays(1);
 
                 switch (time)
                 {

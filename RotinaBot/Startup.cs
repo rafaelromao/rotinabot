@@ -23,6 +23,7 @@ namespace RotinaBot
         public Task StartAsync(CancellationToken cancellationToken)
         {
             TypeUtil.RegisterDocument<Routine>();
+            TypeUtil.RegisterDocument<PhoneNumber>();
 
             return Task.CompletedTask;
         }

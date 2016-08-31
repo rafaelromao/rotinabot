@@ -22,7 +22,7 @@ namespace RotinaBot.Receivers
                 await Bot.SendTaskDaysRequestAsync(message.From, cancellationToken);
                 Bot.StateManager.SetState(message.From, Bot.Settings.States.WaitingTaskDays);
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 await Bot.InformAProblemHasOcurredAsync(message.From, cancellationToken);
             }

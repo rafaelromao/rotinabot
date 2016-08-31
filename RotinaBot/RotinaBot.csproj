@@ -78,6 +78,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Documents\PhoneNumberRegistrationStatus.cs" />
+    <Compile Include="Documents\PhoneNumber.cs" />
     <Compile Include="ISMSAuthenticator.cs" />
     <Compile Include="PlainTextMessageReceiver.cs" />
     <Compile Include="Receivers\ConfirmPhoneNumber.cs" />

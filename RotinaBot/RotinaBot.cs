@@ -36,53 +36,64 @@ namespace RotinaBot
 
         #region Generic
 
-        private async Task<Routine> GetRoutineAsync(Node owner, bool allowSlaveRoutine, CancellationToken cancellationToken)
+        private async Task<Routine> GetRoutineAsync(Identity owner, bool allowSlaveRoutine, CancellationToken cancellationToken)
         {
             try
             {
-                var routine = await _bucket.GetAsync<Routine>(owner.ToIdentity().ToString(), cancellationToken);
+                owner = owner.ToNode().ToIdentity();
+
+                var routine = await _bucket.GetAsync<Routine>(owner.ToString(), cancellationToken);
                 if (routine == null)
                 {
                     routine = new Routine { Owner = owner };
-                    await _bucket.SetAsync(owner.ToIdentity().ToString(), routine, TimeSpan.FromDays(short.MaxValue), cancellationToken);
+                    await _bucket.SetAsync(owner.ToString(), routine, TimeSpan.FromDays(short.MaxValue), cancellationToken);
                 }
 
                 if (routine.PhoneNumberRegistrationStatus != PhoneNumberRegistrationStatus.Confirmed || allowSlaveRoutine)
                     return routine;
 
-                var masterOwnerIdentity = await _bucket.GetAsync<IdentityDocument>(routine.PhoneNumber, cancellationToken);
-                if (masterOwnerIdentity == null)
+                var phoneNumber = await _bucket.GetAsync<PhoneNumber>(routine.PhoneNumber, cancellationToken);
+                if (phoneNumber == null)
                     return routine;
 
-                var ownerRoutine = await _bucket.GetAsync<Routine>(masterOwnerIdentity.Value.ToString(), cancellationToken);
-                if (ownerRoutine != routine && routine.Tasks?.Length > 0)
+                var ownerRoutine = await _bucket.GetAsync<Routine>(phoneNumber.Owner, cancellationToken);
+                if (!ownerRoutine.Owner.Equals(routine.Owner) && routine.Tasks?.Length > 0)
                 {
                     ownerRoutine.Tasks = ownerRoutine.Tasks.Concat(routine.Tasks).ToArray();
                     routine.Tasks = new RoutineTask[0];
-                    await SetRoutineAsync(owner, routine, cancellationToken);
+                    await SetRoutineAsync(routine, cancellationToken);
+                    await SetRoutineAsync(ownerRoutine, cancellationToken);
                 }
                 routine = ownerRoutine;
 
                 return routine;
             }
-            catch
+            catch (Exception e)
             {
                 return new Routine { Owner = owner };
             }
         }
 
-        private async Task SetRoutineAsync(Node owner, Routine routine, CancellationToken cancellationToken)
+        private async Task SetRoutineAsync(Routine routine, CancellationToken cancellationToken)
         {
-            await _bucket.SetAsync(owner.ToIdentity().ToString(), routine, TimeSpan.FromDays(short.MaxValue), cancellationToken);
+            await _bucket.SetAsync(routine.Owner.ToString(), routine, TimeSpan.FromDays(short.MaxValue), cancellationToken);
 
             if (routine.PhoneNumberRegistrationStatus != PhoneNumberRegistrationStatus.Confirmed)
                 return;
 
-            var masterOwnerIdentity = await _bucket.GetAsync<IdentityDocument>(routine.PhoneNumber, cancellationToken);
-            if (masterOwnerIdentity != null)
+            var phoneNumber = await _bucket.GetAsync<PhoneNumber>(routine.PhoneNumber, cancellationToken);
+            if (phoneNumber != null)
                 return;
 
-            await _bucket.SetAsync(routine.PhoneNumber, new IdentityDocument { Value = owner.ToIdentity() }, TimeSpan.FromDays(short.MaxValue), cancellationToken);
+            await _bucket.SetAsync(
+                routine.PhoneNumber, 
+                new PhoneNumber
+                {
+                    Owner = routine.Owner.ToString(), Value = routine.PhoneNumber
+                }, 
+                TimeSpan.FromDays(short.MaxValue), 
+                cancellationToken
+            );
         }
 
         private static RoutineTask[] SortRoutineTasks(IEnumerable<RoutineTask> tasks)
@@ -100,7 +111,7 @@ namespace RotinaBot
             {
                 routine.Tasks = routine.Tasks.Take(routine.Tasks.Length - 1).ToArray();
             }
-            await SetRoutineAsync(owner, routine, cancellationToken);
+            await SetRoutineAsync(routine, cancellationToken);
         }
 
         public async Task SendAtYourServiceMessageAsync(Node owner, CancellationToken cancellationToken)
@@ -186,7 +197,7 @@ namespace RotinaBot
         {
             var routine = await GetRoutineAsync(owner, true, cancellationToken);
             routine.PhoneNumberRegistrationStatus = PhoneNumberRegistrationStatus.Ignored;
-            await SetRoutineAsync(owner, routine, cancellationToken);
+            await SetRoutineAsync(routine, cancellationToken);
         }
 
         public async Task<bool> SavePhoneNumberAsync(Node owner, Document content, CancellationToken cancellationToken)
@@ -201,7 +212,7 @@ namespace RotinaBot
             var routine = await GetRoutineAsync(owner, true, cancellationToken);
             routine.PhoneNumber = phoneNumber.ToString();
             routine.AuthenticationCode = _ismsAuthenticator.GenerateAuthenticationCode();
-            await SetRoutineAsync(owner, routine, cancellationToken);
+            await SetRoutineAsync(routine, cancellationToken);
             return true;
         }
 
@@ -219,7 +230,7 @@ namespace RotinaBot
                 return false;
 
             routine.PhoneNumberRegistrationStatus = PhoneNumberRegistrationStatus.Confirmed;
-            await SetRoutineAsync(owner, routine, cancellationToken);
+            await SetRoutineAsync(routine, cancellationToken);
             return true;
         }
 
@@ -274,7 +285,7 @@ namespace RotinaBot
             var routine = await GetRoutineAsync(owner, false, cancellationToken);
             var task = routine.Tasks.Last();
             task.Days = taskDays;
-            await SetRoutineAsync(owner, routine, cancellationToken);
+            await SetRoutineAsync(routine, cancellationToken);
         }
 
         public async Task SendTaskTimeRequestAsync(Node owner, CancellationToken cancellationToken)
@@ -322,7 +333,7 @@ namespace RotinaBot
                     Name = taskName
                 }
             }).ToArray();
-            await SetRoutineAsync(owner, routine, cancellationToken);
+            await SetRoutineAsync(routine, cancellationToken);
         }
 
         public async Task SendTaskDaysRequestAsync(Node owner, CancellationToken cancellationToken)
@@ -366,7 +377,7 @@ namespace RotinaBot
             var routine = await GetRoutineAsync(owner, false, cancellationToken);
             var task = routine.Tasks.Last();
             task.Time = taskTime;
-            await SetRoutineAsync(owner, routine, cancellationToken);
+            await SetRoutineAsync(routine, cancellationToken);
 
             return task;
         }
@@ -409,7 +420,7 @@ namespace RotinaBot
             var task = routine.Tasks.Last();
             task.IsActive = true;
             await _scheduler.ConfigureScheduleAsync(routine, owner, task.Time.GetValueOrDefault(), cancellationToken);
-            await SetRoutineAsync(owner, routine, cancellationToken);
+            await SetRoutineAsync(routine, cancellationToken);
         }
 
         public async Task InformTheTaskWasCreatedAsync(Node owner, CancellationToken cancellationToken)
@@ -434,7 +445,7 @@ namespace RotinaBot
                 routine.Tasks = routine.Tasks.Where(t => t != task).Concat(new[] { task }).ToArray();
 
                 task.LastTime = DateTimeOffset.Now;
-                await SetRoutineAsync(owner, routine, cancellationToken);
+                await SetRoutineAsync(routine, cancellationToken);
 
                 return task;
             }
@@ -445,7 +456,7 @@ namespace RotinaBot
         {
             var routine = await GetRoutineAsync(owner, false, cancellationToken);
             routine.Tasks = routine.Tasks.Take(routine.Tasks.Length - 1).ToArray();
-            await SetRoutineAsync(owner, routine, cancellationToken);
+            await SetRoutineAsync(routine, cancellationToken);
         }
 
         public async Task SendDeleteConfirmationRequestAsync(Node owner, RoutineTask task, CancellationToken cancellationToken)
@@ -655,7 +666,7 @@ namespace RotinaBot
                 return false;
 
             task.LastTime = DateTimeOffset.Now;
-            await SetRoutineAsync(owner, routine, cancellationToken);
+            await SetRoutineAsync(routine, cancellationToken);
 
             return true;
         }

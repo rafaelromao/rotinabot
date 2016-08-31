@@ -20,7 +20,7 @@
     {
       "type": "SetNameForNewTask",
       "mediaType": "text/plain",
-      "content": "^((?!(/.*)|^([0-9]*)$|oi|olá|ola|menu|começar|comecar|iniciar|start).)*$"
+      "content": "^((?!(/.*)|(^[0-9]*$)|oi|olá|ola|menu|começar|comecar|iniciar|start).)*$"
     },
     {
       "type": "SetDaysForNewTask",
@@ -140,7 +140,7 @@
       "KeepGoing": "Parabéns! Continue cumprindo as tarefas da sua rotina!",
       "WhichTimeShallThisTaskBePerformed": "E em que dias da semana essa tarefa deve ser realizada?",
       "WhichDaysShallThisTaskBePerformed": "E qual o melhor momento do dia para esta tarefa?",
-      "SorryICannotHelpYouRightNow": "Desculpe, não poderei te ajudar no momento!",
+      "SorryICannotHelpYouRightNow": "Desculpe, não poderei te atender no momento!",
       "PhoneNumberRegistrationOffer": "Olá. Gostaria de ter acesso à sua rotina em outros aplicativos de mensagem? Se sim, me informe o número de seu celular com DDD.",
       "IDoNotWant": "Não tenho interesse!",
       "InformRegisterPhoneCommand": "Caso mude de ideia, envie uma mensagem com o comando /register!",
