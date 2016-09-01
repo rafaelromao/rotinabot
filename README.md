@@ -12,7 +12,7 @@ Developed using the [OMNI Messaging Hub](http://omni.messaginghub.io) platform.
 Available at:
 - [Facebook Messenger](http://facebook.com/rotinabot) as @rotinabot
 - [Telegram](https://telegram.me/rotinabot) as @rotinabot
-- [OMNI](https://play.google.com/store/apps/details?id=net.take.omni&hl=pt_BR) as RotinaBot
+- [OMNI](http://goo.gl/GbY2Ut) as RotinaBot
 
 License:
 - MIT
