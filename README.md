@@ -10,7 +10,7 @@ Developed using the [OMNI Messaging Hub](http://omni.messaginghub.io) platform.
 - Receive reminders with your tasks for each period of the day.
 
 Available at:
-- [Facebook Messenger](http://facebook.com/rotinabot) as @rotinabot
+- [Facebook Messenger](http://m.me/rotinabot) as @rotinabot
 - [Telegram](https://telegram.me/rotinabot) as @rotinabot
 - [OMNI](http://goo.gl/GbY2Ut) as RotinaBot
 
