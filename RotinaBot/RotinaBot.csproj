@@ -71,16 +71,11 @@
       <HintPath>..\packages\Takenet.MessagingHub.Client.0.3.136\lib\net461\Takenet.MessagingHub.Client.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Takenet.MessagingHub.Client.Template, Version=0.3.136.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Takenet.MessagingHub.Client.Template.0.3.136\lib\net461\Takenet.MessagingHub.Client.Template.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Documents\PhoneNumberRegistrationStatus.cs" />
     <Compile Include="Documents\PhoneNumber.cs" />
     <Compile Include="ISMSAuthenticator.cs" />
-    <Compile Include="PlainTextMessageReceiver.cs" />
     <Compile Include="Receivers\ConfirmPhoneNumber.cs" />
     <Compile Include="Receivers\SavePhoneNumber.cs" />
     <Compile Include="Receivers\IgnorePhoneNumberRegistration.cs" />
