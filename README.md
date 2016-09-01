@@ -1,5 +1,5 @@
 # RotinaBot
-RotinaBot is a chatBot to control you routine!
+RotinaBot is a chatbot to control you routine!
 
 - Create tasks for work days, week ends or every day.
 - Group tasks by morning, afternoon and evening.
@@ -9,7 +9,7 @@ RotinaBot is a chatBot to control you routine!
 
 Available at:
 - [Facebook Messenger](http://facebook.com/rotinabot) as @rotinabot
-- [Telegram](http://telegram.org) as @rotinabot
+- [Telegram](https://telegram.me/rotinabot) as @rotinabot
 - [OMNI](https://play.google.com/store/apps/details?id=net.take.omni&hl=pt_BR) as RotinaBot
 
 License:
