@@ -74,7 +74,8 @@ namespace RotinaBot.Receivers
                         new SelectOption
                         {
                             Text = Settings.Phraseology.Cancel,
-                            Value = new PlainText { Text = Settings.Commands.Cancel }
+                            Value = new PlainText { Text = Settings.Commands.Cancel },
+                            Order = 4
                         }
                     }
             };
