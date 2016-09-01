@@ -10,7 +10,7 @@
     {
       "type": "SendInitialMenu",
       "mediaType": "text/plain",
-      "content": "^(menu|começar|comecar|iniciar|start|/start|(.{1,3}))$"
+      "content": "^(menu|começar|comecar|iniciar|start|/start|(\D{1,3}))$"
     },
     {
       "type": "RequestTaskName",
@@ -20,7 +20,7 @@
     {
       "type": "SetNameForNewTask",
       "mediaType": "text/plain",
-      "content": "^((?!(\/.*)|(^[0-9]*$)|menu|começar|comecar|iniciar|start|^(.{1,3})$).)*$"
+      "content": "^((?!(/.*)|(^[0-9]*$)|menu|começar|comecar|iniciar|start|^(\D{1,3})$).)*$"
     },
     {
       "type": "SetDaysForNewTask",
@@ -92,7 +92,7 @@
     },
     {
       "type": "SavePhoneNumber",
-      "content": "^((?!(/.*)|oi|olá|ola|menu|começar|comecar|iniciar|start).)*$",
+      "content": "^((?!(/.*)|oi|olá|ola|menu|começar|comecar|iniciar|start|^(\D{1,3})$).)*$",
       "mediaType": "text/plain",
       "state": "waitingPhoneNumber"
     },
@@ -105,7 +105,7 @@
     {
       "type": "ConfirmPhoneNumber",
       "mediaType": "text/plain",
-      "content": "^((?!(/.*)|oi|olá|ola|menu|começar|comecar|iniciar|start).)*$",
+      "content": "^((?!(/.*)|oi|olá|ola|menu|começar|comecar|iniciar|start|^(\D{1,3})$).)*$",
       "state": "waitingSMSCode"
     },
     {

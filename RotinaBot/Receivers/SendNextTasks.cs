@@ -32,7 +32,7 @@ namespace RotinaBot.Receivers
             }
         }
 
-        public async Task<bool> SendNextTasksAsync(Node owner, CancellationToken cancellationToken)
+        private async Task<bool> SendNextTasksAsync(Node owner, CancellationToken cancellationToken)
         {
             var time = DateTime.Now.Hour >= 18
                 ? RoutineTaskTimeValue.Evening
