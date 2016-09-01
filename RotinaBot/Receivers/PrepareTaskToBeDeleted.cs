@@ -1,14 +1,25 @@
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Lime.Messaging.Contents;
 using Lime.Protocol;
+using RotinaBot.Documents;
 using Takenet.MessagingHub.Client;
+using Takenet.MessagingHub.Client.Extensions.Bucket;
+using Takenet.MessagingHub.Client.Extensions.Delegation;
+using Takenet.MessagingHub.Client.Extensions.Scheduler;
+using Takenet.MessagingHub.Client.Host;
+using Takenet.MessagingHub.Client.Sender;
 
 namespace RotinaBot.Receivers
 {
     public class PrepareTaskToBeDeleted : BaseMessageReceiver
     {
-        public PrepareTaskToBeDeleted(RotinaBot bot) : base(bot)
+        public PrepareTaskToBeDeleted(
+            IMessagingHubSender sender, IBucketExtension bucket, ISchedulerExtension scheduler, IDelegationExtension delegation,
+            IStateManager stateManager, Application application, Settings settings)
+            : base(sender, bucket, scheduler, delegation, stateManager, application, settings)
         {
         }
 
@@ -16,22 +27,69 @@ namespace RotinaBot.Receivers
         {
             try
             {
-                var task = await Bot.PrepareTaskToBeDeletedAsync(message.From, message.Content, cancellationToken);
+                var task = await PrepareTaskToBeDeletedAsync(message.From, message.Content, cancellationToken);
                 if (task != null)
                 {
-                    await Bot.SendDeleteConfirmationRequestAsync(message.From, task, cancellationToken);
-                    Bot.StateManager.SetState(message.From, Bot.Settings.States.WaitingDeleteTaskConfirmation);
+                    await SendDeleteConfirmationRequestAsync(message.From, task, cancellationToken);
+                    StateManager.SetState(message.From, Settings.States.WaitingDeleteTaskConfirmation);
                 }
                 else
                 {
-                    await Bot.InformTheTaskWasNotFoundAsync(message.From, cancellationToken);
-                    Bot.StateManager.SetState(message.From, Bot.Settings.States.Default);
+                    await InformTheTaskWasNotFoundAsync(message.From, cancellationToken);
+                    StateManager.SetState(message.From, Settings.States.Default);
                 }
             }
             catch (Exception)
             {
-                await Bot.InformAnOptionShallBeChosenAsync(message.From, cancellationToken);
+                await InformAnOptionShallBeChosenAsync(message.From, cancellationToken);
             }
+        }
+
+        private async Task<RoutineTask> PrepareTaskToBeDeletedAsync(Node owner, Document content, CancellationToken cancellationToken)
+        {
+            var externalTaskId = RoutineTask.ExtractTaskIdFromDeleteCommand(((PlainText)content)?.Text);
+            long taskId;
+            long.TryParse(externalTaskId, out taskId);
+            var routine = await GetRoutineAsync(owner, false, cancellationToken);
+            var task = routine.Tasks.FirstOrDefault(t => t.Id == taskId);
+            if (task == null)
+                return null;
+
+            // Put the task to be deleted at the end of the array
+            routine.Tasks = routine.Tasks.Where(t => t != task).Concat(new[] { task }).ToArray();
+
+            task.LastTime = DateTimeOffset.Now;
+            await SetRoutineAsync(routine, cancellationToken);
+
+            return task;
+        }
+
+        private async Task SendDeleteConfirmationRequestAsync(Node owner, RoutineTask task, CancellationToken cancellationToken)
+        {
+            var select = new Select
+            {
+                Text = $"{Settings.Phraseology.ConfirmDelete} '" +
+                       $"{task.Name} " +
+                       $"{Settings.Phraseology.During} " +
+                       $"{task.Time.GetValueOrDefault().Name().ToLower()} " +
+                       $"{task.Days.GetValueOrDefault().Name().ToLower()}'?",
+                Options = new[]
+                {
+                            new SelectOption
+                            {
+                                Text = Settings.Phraseology.Confirm,
+                                Value = new PlainText {Text = Settings.Commands.Confirm},
+                                Order = 1
+                            },
+                            new SelectOption
+                            {
+                                Text = Settings.Phraseology.Cancel,
+                                Value = new PlainText {Text = Settings.Commands.Cancel},
+                                Order = 2
+                            }
+                        }
+            };
+            await Sender.SendMessageAsync(select, owner, cancellationToken);
         }
     }
 }

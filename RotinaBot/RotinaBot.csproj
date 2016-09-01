@@ -97,12 +97,10 @@
     <Compile Include="Documents\RoutineTask.cs" />
     <Compile Include="Documents\RoutineTaskDays.cs" />
     <Compile Include="Documents\RoutineTaskTime.cs" />
-    <Compile Include="Scheduler.cs" />
     <Compile Include="Receivers\SendTasksForTheWeek.cs" />
     <Compile Include="Receivers\SendTasksThatCanBeDeleted.cs" />
     <Compile Include="Receivers\SendNextTasks.cs" />
     <Compile Include="Receivers\MarkTaskAsCompleted.cs" />
-    <Compile Include="RotinaBot.cs" />
     <Compile Include="ServiceProvider.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="SMSAuthenticator.cs" />
