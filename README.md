@@ -1,5 +1,7 @@
 # RotinaBot
-RotinaBot is a chatbot to control you routine!
+RotinaBot is a chatbot to control you routine.
+
+Developed using the [OMNI Messaging Hub](http://omni.messaginghub.io) platform.
 
 - Create tasks for work days, week ends or every day.
 - Group tasks by morning, afternoon and evening.
