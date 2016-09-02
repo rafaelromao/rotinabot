@@ -215,27 +215,39 @@ namespace RotinaBot.Receivers
                 {
                     new SelectOption
                     {
+                        Text = Settings.Phraseology.WhatAreMyNextTasks,
+                        Value = new PlainText { Text = Settings.Commands.Next },
+                        Order = 1
+                    },
+                    new SelectOption
+                    {
                         Text = Settings.Phraseology.WhatIHaveForToday,
                         Value = new PlainText { Text = Settings.Commands.Day },
-                        Order = 1
+                        Order = 2
                     },
                     new SelectOption
                     {
                         Text = Settings.Phraseology.WhatIHaveForTheWeek,
                         Value = new PlainText { Text = Settings.Commands.Week },
-                        Order = 2
+                        Order = 3
                     },
                     new SelectOption
                     {
                         Text = Settings.Phraseology.IncludeATaskInMyRoutine,
                         Value = new PlainText { Text = Settings.Commands.New },
-                        Order = 3
+                        Order = 4
                     },
                     new SelectOption
                     {
                         Text = Settings.Phraseology.ExcludeATaskFromMyRoutine,
                         Value = new PlainText { Text = Settings.Commands.Delete },
-                        Order = 4
+                        Order = 5
+                    },
+                    new SelectOption
+                    {
+                        Text = Settings.Phraseology.Cancel,
+                        Value = new PlainText { Text = Settings.Commands.Cancel },
+                        Order = 6
                     }
                 }
             };

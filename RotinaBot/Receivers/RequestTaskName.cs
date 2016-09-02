@@ -24,7 +24,7 @@ namespace RotinaBot.Receivers
             await RequestTaskNameAsync(message.From, cancellationToken);
         }
 
-        public async Task RequestTaskNameAsync(Node owner, CancellationToken cancellationToken)
+        private async Task RequestTaskNameAsync(Node owner, CancellationToken cancellationToken)
         {
             await Sender.SendMessageAsync(Settings.Phraseology.WhatIsTheTaskName, owner, cancellationToken);
         }

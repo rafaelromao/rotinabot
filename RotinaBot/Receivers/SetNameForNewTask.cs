@@ -29,7 +29,15 @@ namespace RotinaBot.Receivers
             {
                 if (StateManager.GetState(message.From) == Settings.States.WaitingPhoneNumber)
                     return;
+                if (StateManager.GetState(message.From) == Settings.States.WaitingInitialMenuOption)
+                    return;
 
+                if (message.Content.ToString().Length < 4)
+                {
+                    await SendInitialMenuAsync(message.From, cancellationToken);
+                    return;
+                }
+                    
                 await SetNameForNewTaskAsync(message.From, message.Content, cancellationToken);
                 await SendTaskDaysRequestAsync(message.From, cancellationToken);
                 StateManager.SetState(message.From, Settings.States.WaitingTaskDays);

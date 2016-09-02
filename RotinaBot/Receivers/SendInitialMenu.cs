@@ -24,6 +24,7 @@ namespace RotinaBot.Receivers
             if (await IsPhoneNumberRegisteredAsync(message.From, cancellationToken))
             {
                 await SendInitialMenuAsync(message.From, cancellationToken);
+                StateManager.SetState(message.From, Settings.States.WaitingInitialMenuOption);
             }
             else
             {

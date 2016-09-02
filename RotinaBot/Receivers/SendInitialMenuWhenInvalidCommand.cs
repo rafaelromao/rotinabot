@@ -23,6 +23,7 @@ namespace RotinaBot.Receivers
         public override async Task ReceiveAsync(Message message, CancellationToken cancellationToken)
         {
             await SendInitialMenuAsync(message.From, cancellationToken);
+            StateManager.SetState(message.From, Settings.States.WaitingInitialMenuOption);
         }
     }
 }

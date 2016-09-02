@@ -50,6 +50,7 @@ namespace RotinaBot
         public string Yes { get; set; }
         public string No { get; set; }
         public string ThisIsNotAValidPhoneNumber { get; set; }
+        public string WhatAreMyNextTasks { get; set; }
     }
 
     public class Commands
@@ -76,5 +77,6 @@ namespace RotinaBot
         public string WaitingTaskConfirmation { get; set; }
         public string WaitingPhoneNumber { get; set; }
         public string WaitingSMSCode { get; set; }
+        public string WaitingInitialMenuOption { get; set; }
     }
 }

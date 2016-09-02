@@ -10,17 +10,24 @@
     {
       "type": "SendInitialMenu",
       "mediaType": "text/plain",
-      "content": "^(menu|começar|comecar|iniciar|start|/start|(\D{1,3}))$"
+      "content": "^(oi|olá|ola|menu|começar|comecar|iniciar|start|/start)$"
     },
     {
       "type": "RequestTaskName",
       "mediaType": "text/plain",
-      "content": "^(/new)$"
+      "content": "^(/new)$",
+      "outState": "default"
+    },
+    {
+      "type": "RequestTaskName",
+      "mediaType": "text/plain",
+      "content": "^(incluir|nova|new|4|i|n)$",
+      "state": "waitingInitialMenuOption"
     },
     {
       "type": "SetNameForNewTask",
       "mediaType": "text/plain",
-      "content": "^((?!(/.*)|(^[0-9]*$)|menu|começar|comecar|iniciar|start|^(\D{1,3})$).)*$"
+      "content": "^((?!(/.*)|(^[0-9]*$)|oi|olá|ola|menu|começar|comecar|iniciar|start).)*$"
     },
     {
       "type": "SetDaysForNewTask",
@@ -47,13 +54,32 @@
       "content": "^(/day)$"
     },
     {
+      "type": "SendTasksForTheDay",
+      "mediaType": "text/plain",
+      "content": "^(dia|d|day|2)$",
+      "state": "waitingInitialMenuOption"
+    },
+    {
       "type": "SendNextTasks",
       "mediaType": "text/plain",
       "content": "^(/next)$"
     },
     {
       "type": "SendNextTasks",
+      "mediaType": "text/plain",
+      "content": "^(próxima|proxima|next|p|1)$",
+      "state": "waitingInitialMenuOption"
+    },
+    {
+      "type": "SendNextTasks",
       "mediaType": "application/vnd.lime.identity"
+    },
+    {
+      "type": "SendTasksForTheWeek",
+      "mediaType": "text/plain",
+      "content": "^(semana|s|3)$",
+      "state": "waitingInitialMenuOption",
+      "outState": "default"
     },
     {
       "type": "SendTasksForTheWeek",
@@ -67,10 +93,23 @@
       "content": "^(/delete)$"
     },
     {
+      "type": "SendTasksThatCanBeDeleted",
+      "mediaType": "text/plain",
+      "content": "^(excluir|remover|e|r|5)$",
+      "state": "waitingInitialMenuOption"
+    },
+    {
       "type": "FinishTaskDeletion",
       "mediaType": "text/plain",
       "content": "^(/confirm)$",
       "state": "waitingDeleteTaskConfirmation",
+      "outState": "default"
+    },
+    {
+      "type": "CancelCurrentOperation",
+      "mediaType": "text/plain",
+      "content": "^(can.*|c|6)$",
+      "state": "waitingInitialMenuOption",
       "outState": "default"
     },
     {
@@ -92,7 +131,7 @@
     },
     {
       "type": "SavePhoneNumber",
-      "content": "^((?!(/.*)|oi|olá|ola|menu|começar|comecar|iniciar|start|^(\D{1,3})$).)*$",
+      "content": "^((?!(/.*)|oi|olá|ola|menu|começar|comecar|iniciar|start).)*$",
       "mediaType": "text/plain",
       "state": "waitingPhoneNumber"
     },
@@ -105,7 +144,7 @@
     {
       "type": "ConfirmPhoneNumber",
       "mediaType": "text/plain",
-      "content": "^((?!(/.*)|oi|olá|ola|menu|começar|comecar|iniciar|start|^(\D{1,3})$).)*$",
+      "content": "^((?!(/.*)|oi|olá|ola|menu|começar|comecar|iniciar|start).)*$",
       "state": "waitingSMSCode"
     },
     {
@@ -117,6 +156,7 @@
   "settings": {
     "phraseology": {
       "initialMessage": "Olá, em que posso ajudar para que você tenha uma rotina mais organizada?",
+      "whatAreMyNextTasks": "Próximas tarefas",
       "whatIHaveForToday": "Tarefas de hoje",
       "whatIHaveForTheWeek": "Tarefas da semana",
       "includeATaskInMyRoutine": "Incluir tarefa",
@@ -164,6 +204,7 @@
     },
     "states": {
       "default": "default",
+      "waitingInitialMenuOption": "waitingInitialMenuOption",
       "waitingDeleteTaskConfirmation": "waitingDeleteTaskConfirmation",
       "waitingTaskSelection": "waitingTaskSelection",
       "waitingDeleteTaskSelection": "waitingDeleteTaskSelection",
