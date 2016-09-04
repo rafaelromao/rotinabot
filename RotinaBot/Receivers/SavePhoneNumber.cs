@@ -1,12 +1,8 @@
-
 using System.Threading;
 using System.Threading.Tasks;
 using Lime.Protocol;
+using RotinaBot.Domain;
 using Takenet.MessagingHub.Client;
-using Takenet.MessagingHub.Client.Extensions.Bucket;
-using Takenet.MessagingHub.Client.Extensions.Delegation;
-using Takenet.MessagingHub.Client.Extensions.Scheduler;
-using Takenet.MessagingHub.Client.Host;
 using Takenet.MessagingHub.Client.Sender;
 
 namespace RotinaBot.Receivers
@@ -16,9 +12,9 @@ namespace RotinaBot.Receivers
         private readonly ISMSAuthenticator _smsAuthenticator;
 
         public SavePhoneNumber(
-            IMessagingHubSender sender, IBucketExtension bucket, ISchedulerExtension scheduler, IDelegationExtension delegation,
-            IStateManager stateManager, ISMSAuthenticator smsAuthenticator, Application application, Settings settings) 
-            : base(sender, bucket, scheduler, delegation, stateManager, application, settings)
+            IMessagingHubSender sender, IStateManager stateManager, ISMSAuthenticator smsAuthenticator,
+            Settings settings, RoutineRepository routineRepository, ReschedulerTask reschedulerTask)
+            : base(sender, stateManager, settings, routineRepository, reschedulerTask)
         {
             _smsAuthenticator = smsAuthenticator;
         }

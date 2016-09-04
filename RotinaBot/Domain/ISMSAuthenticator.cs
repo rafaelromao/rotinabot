@@ -2,7 +2,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using RotinaBot.Documents;
 
-namespace RotinaBot
+namespace RotinaBot.Domain
 {
     public interface ISMSAuthenticator
     {

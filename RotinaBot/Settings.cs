@@ -1,17 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Lime.Protocol;
-
-namespace RotinaBot
+﻿namespace RotinaBot
 {
     public class Settings
     {
         public Phraseologies Phraseology { get; set; }
         public Commands Commands { get; set; }
         public States States { get; set; }
+        public int SchedulerDelayInSeconds { get; set; }
     }
 
     public class Phraseologies

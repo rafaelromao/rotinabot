@@ -6,7 +6,7 @@ using RotinaBot.Documents;
 using Takenet.MessagingHub.Client;
 using Takenet.MessagingHub.Client.Sender;
 
-namespace RotinaBot
+namespace RotinaBot.Domain
 {
     internal class SMSAuthenticator : ISMSAuthenticator
     {

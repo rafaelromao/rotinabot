@@ -6,100 +6,48 @@ using System.Threading.Tasks;
 using Lime.Messaging.Contents;
 using Lime.Protocol;
 using RotinaBot.Documents;
-using Takenet.MessagingHub.Client.Extensions.Bucket;
+using RotinaBot.Domain;
 using Takenet.MessagingHub.Client.Listener;
 using Takenet.MessagingHub.Client.Sender;
 using Takenet.MessagingHub.Client;
-using Takenet.MessagingHub.Client.Extensions.Delegation;
-using Takenet.MessagingHub.Client.Extensions.Scheduler;
-using Takenet.MessagingHub.Client.Host;
 
 namespace RotinaBot.Receivers
 {
     public abstract class BaseMessageReceiver : IMessageReceiver
     {
-        private readonly ISchedulerExtension _scheduler;
-        private readonly IDelegationExtension _delegation;
-        private readonly Application _application;
+        private readonly RoutineRepository _routineRepository;
+        private readonly ReschedulerTask _reschedulerTask;
+
         public IStateManager StateManager { get; }
         public IMessagingHubSender Sender { get; }
-        public IBucketExtension Bucket { get; }
         public Settings Settings { get; }
 
         protected BaseMessageReceiver(
-            IMessagingHubSender sender, IBucketExtension bucket, ISchedulerExtension scheduler, IDelegationExtension delegation, 
-            IStateManager stateManager, Application application, Settings settings)
+            IMessagingHubSender sender, IStateManager stateManager, 
+            Settings settings, RoutineRepository routineRepository, ReschedulerTask reschedulerTask)
         {
-            _scheduler = scheduler;
-            _delegation = delegation;
-            _application = application;
+            _routineRepository = routineRepository;
+            _reschedulerTask = reschedulerTask;
             StateManager = stateManager;
             Sender = sender;
-            Bucket = bucket;
             Settings = settings;
         }
 
         public abstract Task ReceiveAsync(Message message, CancellationToken cancellationToken);
 
-        protected async Task<Routine> GetRoutineAsync(Identity owner, bool allowSlaveRoutine, CancellationToken cancellationToken)
-        {
-            try
-            {
-                owner = owner.ToNode().ToIdentity();
-
-                var routine = await Bucket.GetAsync<Routine>(owner.ToString(), cancellationToken);
-                if (routine == null)
-                {
-                    routine = new Routine { Owner = owner };
-                    await Bucket.SetAsync(owner.ToString(), routine, TimeSpan.FromDays(short.MaxValue), cancellationToken);
-                }
-
-                if (routine.PhoneNumberRegistrationStatus != PhoneNumberRegistrationStatus.Confirmed || allowSlaveRoutine)
-                    return routine;
-
-                var phoneNumber = await Bucket.GetAsync<PhoneNumber>(routine.PhoneNumber, cancellationToken);
-                if (phoneNumber == null)
-                    return routine;
-
-                var ownerRoutine = await Bucket.GetAsync<Routine>(phoneNumber.Owner, cancellationToken);
-                if (!ownerRoutine.Owner.Equals(routine.Owner) && routine.Tasks?.Length > 0)
-                {
-                    ownerRoutine.Tasks = ownerRoutine.Tasks.Concat(routine.Tasks).ToArray();
-                    routine.Tasks = new RoutineTask[0];
-                    await SetRoutineAsync(routine, cancellationToken);
-                    await SetRoutineAsync(ownerRoutine, cancellationToken);
-                }
-                routine = ownerRoutine;
-
-                return routine;
-            }
-            catch (Exception e)
-            {
-                return new Routine { Owner = owner };
-            }
-        }
-
         protected async Task SetRoutineAsync(Routine routine, CancellationToken cancellationToken)
         {
-            await Bucket.SetAsync(routine.Owner.ToString(), routine, TimeSpan.FromDays(short.MaxValue), cancellationToken);
+            await _routineRepository.SetRoutineAsync(routine, cancellationToken);
+        }
 
-            if (routine.PhoneNumberRegistrationStatus != PhoneNumberRegistrationStatus.Confirmed)
-                return;
+        protected async Task<Routine> GetRoutineAsync(Identity owner, bool allowSlaveRoutine, CancellationToken cancellationToken)
+        {
+            return await _routineRepository.GetRoutineAsync(owner, allowSlaveRoutine, cancellationToken);
+        }
 
-            var phoneNumber = await Bucket.GetAsync<PhoneNumber>(routine.PhoneNumber, cancellationToken);
-            if (phoneNumber != null)
-                return;
-
-            await Bucket.SetAsync(
-                routine.PhoneNumber,
-                new PhoneNumber
-                {
-                    Owner = routine.Owner.ToString(),
-                    Value = routine.PhoneNumber
-                },
-                TimeSpan.FromDays(short.MaxValue),
-                cancellationToken
-            );
+        public void ConfigureSchedule(Identity owner, CancellationToken cancellationToken)
+        {
+            _reschedulerTask.ConfigureSchedule(owner, cancellationToken);
         }
 
         protected static RoutineTask[] SortRoutineTasks(IEnumerable<RoutineTask> tasks)
@@ -113,59 +61,6 @@ namespace RotinaBot.Receivers
         protected async Task SendAtYourServiceMessageAsync(Node owner, CancellationToken cancellationToken)
         {
             await Sender.SendMessageAsync(Settings.Phraseology.WheneverYouNeed, owner, cancellationToken);
-        }
-
-        protected async Task ConfigureScheduleAsync(Routine routine, RoutineTaskTimeValue time, CancellationToken cancellationToken)
-        {
-            // Will send a message to itself, the next day only, reminding it to send a message with the routine for the given days and time for each client
-            var shouldScheduleAtMorning = time == RoutineTaskTimeValue.Morning &&
-                                          routine.LastMorningReminder != DateTime.Today;
-            var shouldScheduleAtAfternoon = time == RoutineTaskTimeValue.Afternoon &&
-                                          routine.LastAfternoonReminder != DateTime.Today;
-            var shouldScheduleAtEvening = time == RoutineTaskTimeValue.Evening &&
-                                          routine.LastEveningReminder != DateTime.Today;
-
-            if (shouldScheduleAtMorning || shouldScheduleAtAfternoon || shouldScheduleAtEvening)
-            {
-                await _delegation.DelegateAsync(Identity.Parse("postmaster@scheduler.msging.net"), new[] { EnvelopeType.Message }, cancellationToken);
-
-                if (shouldScheduleAtMorning)
-                    routine.LastMorningReminder = DateTime.Today;
-                if (shouldScheduleAtAfternoon)
-                    routine.LastAfternoonReminder = DateTime.Today;
-                if (shouldScheduleAtEvening)
-                    routine.LastEveningReminder = DateTime.Today;
-
-                var identity = new Node(_application.Identifier, _application.Domain, null);
-                var schedule = new Message
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    To = identity,
-                    Content = new IdentityDocument(routine.Owner.ToString())
-                };
-                var isBeforeMorning = DateTime.Now.Hour < 6;
-                var isBeforeAfternoon = DateTime.Now.Hour < 12;
-                var isBeforeEvening = DateTime.Now.Hour < 18;
-
-                var today = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 0, 0, 0);
-
-                var firstMorningSchedule = isBeforeMorning ? today.AddHours(6) : today.AddHours(6).AddDays(1);
-                var firstAfternoonSchedule = isBeforeAfternoon ? today.AddHours(12) : today.AddHours(12).AddDays(1);
-                var firstEveningSchedule = isBeforeEvening ? today.AddHours(18) : today.AddHours(18).AddDays(1);
-
-                switch (time)
-                {
-                    case RoutineTaskTimeValue.Morning:
-                        await _scheduler.ScheduleMessageAsync(schedule, firstMorningSchedule, cancellationToken);
-                        break;
-                    case RoutineTaskTimeValue.Afternoon:
-                        await _scheduler.ScheduleMessageAsync(schedule, firstAfternoonSchedule, cancellationToken);
-                        break;
-                    case RoutineTaskTimeValue.Evening:
-                        await _scheduler.ScheduleMessageAsync(schedule, firstEveningSchedule, cancellationToken);
-                        break;
-                }
-            }
         }
 
         protected async Task InformTheTaskWasNotFoundAsync(Node owner, CancellationToken cancellationToken)

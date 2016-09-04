@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using RotinaBot.Domain;
 using RotinaBot.Receivers;
 using SimpleInjector;
 using Takenet.MessagingHub.Client.Extensions.Scheduler;
@@ -21,6 +22,8 @@ namespace RotinaBot
             Container.Options.AllowOverridingRegistrations = true;
 
             Container.RegisterSingleton<ISMSAuthenticator, SMSAuthenticator>();
+            Container.RegisterSingleton<ReschedulerTask>();
+            Container.RegisterSingleton<RoutineRepository>();
 
             BeforeGetFirstService += delegate { };
         }

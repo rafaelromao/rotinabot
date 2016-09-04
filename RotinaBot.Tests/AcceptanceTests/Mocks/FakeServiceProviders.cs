@@ -1,3 +1,4 @@
+using RotinaBot.Domain;
 using RotinaBot.Tests.AcceptanceTests.Base;
 using Takenet.MessagingHub.Client.Extensions.Bucket;
 using Takenet.MessagingHub.Client.Extensions.Scheduler;
@@ -10,6 +11,7 @@ namespace RotinaBot.Tests.AcceptanceTests.Mocks
         {
             RegisterTestService<IBucketExtension, FakeBucketExtension>();
             RegisterTestService<ISchedulerExtension, NoSchedulerExtension>();
+            RegisterTestService<ReschedulerTask, NoReschedulerTask>();
             RegisterTestService<ISMSAuthenticator, FakeSMSAuthenticator>();
         }
     }
@@ -20,6 +22,7 @@ namespace RotinaBot.Tests.AcceptanceTests.Mocks
         {
             RegisterTestService<IBucketExtension, FakeBucketExtension>();
             RegisterTestService<ISchedulerExtension, FakeSchedulerExtension>();
+            RegisterTestService<ReschedulerTask, FakeReschedulerTask>();
             RegisterTestService<ISMSAuthenticator, FakeSMSAuthenticator>();
         }
     }

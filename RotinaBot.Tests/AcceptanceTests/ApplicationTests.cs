@@ -7,6 +7,7 @@ using Shouldly;
 using RotinaBot.Tests.AcceptanceTests.Mocks;
 using NUnit.Framework;
 using RotinaBot.Documents;
+using RotinaBot.Domain;
 using Takenet.MessagingHub.Client.Tester;
 
 namespace RotinaBot.Tests.AcceptanceTests
@@ -705,6 +706,8 @@ namespace RotinaBot.Tests.AcceptanceTests
             await CreateANewTaskFromTaskNameAsync(taskName, time: time);
 
             // The bot should show the next tasks
+
+            await Task.Delay(TimeSpan.FromSeconds(1));
 
             var response = await Tester.ReceiveMessageAsync();
             response.ShouldNotBeNull();

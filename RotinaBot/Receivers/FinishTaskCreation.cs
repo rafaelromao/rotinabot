@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Lime.Protocol;
 using RotinaBot.Documents;
+using RotinaBot.Domain;
 using Takenet.MessagingHub.Client;
 using Takenet.MessagingHub.Client.Extensions.Bucket;
 using Takenet.MessagingHub.Client.Extensions.Delegation;
@@ -15,9 +16,9 @@ namespace RotinaBot.Receivers
     public class FinishTaskCreation : BaseMessageReceiver
     {
         public FinishTaskCreation(
-            IMessagingHubSender sender, IBucketExtension bucket, ISchedulerExtension scheduler, IDelegationExtension delegation,
-            IStateManager stateManager, Application application, Settings settings)
-            : base(sender, bucket, scheduler, delegation, stateManager, application, settings)
+            IMessagingHubSender sender, IStateManager stateManager,
+            Settings settings, RoutineRepository routineRepository, ReschedulerTask reschedulerTask)
+            : base(sender, stateManager, settings, routineRepository, reschedulerTask)
         {
         }
 
@@ -32,8 +33,9 @@ namespace RotinaBot.Receivers
             var routine = await GetRoutineAsync(owner, false, cancellationToken);
             var task = routine.Tasks.Last();
             task.IsActive = true;
-            await ConfigureScheduleAsync(routine, task.Time.GetValueOrDefault(), cancellationToken);
             await SetRoutineAsync(routine, cancellationToken);
+
+            ConfigureSchedule(routine.Owner, cancellationToken);
         }
 
         private async Task InformTheTaskWasCreatedAsync(Node owner, CancellationToken cancellationToken)

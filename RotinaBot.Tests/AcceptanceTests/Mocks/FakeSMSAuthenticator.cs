@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Lime.Messaging.Contents;
 using Lime.Protocol;
 using RotinaBot.Documents;
+using RotinaBot.Domain;
 using Takenet.MessagingHub.Client.Host;
 using Takenet.MessagingHub.Client.Sender;
 

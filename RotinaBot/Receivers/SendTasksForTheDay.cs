@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Lime.Messaging.Contents;
 using Lime.Protocol;
 using RotinaBot.Documents;
+using RotinaBot.Domain;
 using Takenet.MessagingHub.Client;
 using Takenet.MessagingHub.Client.Extensions.Bucket;
 using Takenet.MessagingHub.Client.Extensions.Delegation;
@@ -17,9 +18,9 @@ namespace RotinaBot.Receivers
     public class SendTasksForTheDay : BaseMessageReceiver
     {
         public SendTasksForTheDay(
-            IMessagingHubSender sender, IBucketExtension bucket, ISchedulerExtension scheduler, IDelegationExtension delegation,
-            IStateManager stateManager, Application application, Settings settings)
-            : base(sender, bucket, scheduler, delegation, stateManager, application, settings)
+            IMessagingHubSender sender, IStateManager stateManager,
+            Settings settings, RoutineRepository routineRepository, ReschedulerTask reschedulerTask)
+            : base(sender, stateManager, settings, routineRepository, reschedulerTask)
         {
         }
 
@@ -39,14 +40,35 @@ namespace RotinaBot.Receivers
         private async Task<bool> SendTasksForTheDayAsync(Node owner, CancellationToken cancellationToken)
         {
             var routine = await GetRoutineAsync(owner, false, cancellationToken);
-            var isWorkDay = DateTime.Today.DayOfWeek != DayOfWeek.Saturday &&
-                            DateTime.Today.DayOfWeek != DayOfWeek.Sunday;
-            var tasks = SortRoutineTasks(routine.Tasks.Where(
-                t => t.IsActive && t.LastTime.Date != DateTime.Today &&
-                     ((t.Days.Value == RoutineTaskDaysValue.EveryDay) ||
-                      (t.Days.Value == RoutineTaskDaysValue.WorkDays && isWorkDay) ||
-                      (t.Days.Value == RoutineTaskDaysValue.WeekEnds && !isWorkDay))
-            ));
+            var isSaturday = DateTime.Today.DayOfWeek == DayOfWeek.Saturday;
+            var isSunday = DateTime.Today.DayOfWeek == DayOfWeek.Saturday;
+
+            RoutineTask[] tasks;
+            if (isSaturday)
+            {
+                tasks = SortRoutineTasks(routine.Tasks.Where(
+                    t => t.IsActive && 
+                         t.LastTime.Date != DateTime.Today &&
+                         t.Days.Value != RoutineTaskDaysValue.WorkDays
+                    ));
+            }
+            else if (isSunday)
+            {
+                tasks = SortRoutineTasks(routine.Tasks.Where(
+                    t => t.IsActive && 
+                         t.LastTime.Date != DateTime.Today &&
+                         t.LastTime.Date != DateTime.Today.AddDays(-1) &&
+                         t.Days.Value != RoutineTaskDaysValue.WorkDays
+                    ));
+            }
+            else
+            {
+                tasks = SortRoutineTasks(routine.Tasks.Where(
+                    t => t.IsActive && 
+                         t.LastTime.Date != DateTime.Today &&
+                         t.Days.Value != RoutineTaskDaysValue.WeekEnds
+                    ));
+            }
 
             if (!tasks.Any())
                 return false;

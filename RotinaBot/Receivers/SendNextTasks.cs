@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Lime.Messaging.Contents;
 using Lime.Protocol;
 using RotinaBot.Documents;
+using RotinaBot.Domain;
 using Takenet.MessagingHub.Client;
 using Takenet.MessagingHub.Client.Extensions.Bucket;
 using Takenet.MessagingHub.Client.Extensions.Delegation;
@@ -17,28 +18,34 @@ namespace RotinaBot.Receivers
     public class SendNextTasks : BaseMessageReceiver
     {
         public SendNextTasks(
-            IMessagingHubSender sender, IBucketExtension bucket, ISchedulerExtension scheduler, IDelegationExtension delegation,
-            IStateManager stateManager, Application application, Settings settings)
-            : base(sender, bucket, scheduler, delegation, stateManager, application, settings)
+            IMessagingHubSender sender, IStateManager stateManager, 
+            Settings settings, RoutineRepository routineRepository, ReschedulerTask reschedulerTask) 
+            : base(sender, stateManager, settings, routineRepository, reschedulerTask)
         {
         }
 
         public override async Task ReceiveAsync(Message message, CancellationToken cancellationToken)
         {
-            var owner = (message.Content as IdentityDocument)?.Value?.ToNode() ?? message.From;
-            if (await SendNextTasksAsync(owner, cancellationToken))
+            var owner = (message.Content as IdentityDocument)?.Value?.ToNode();
+            var reschedule = true;
+            if (owner == null)
+            {
+                owner = message.From;
+                reschedule = false;
+            }
+            if (await SendNextTasksAsync(owner, reschedule, cancellationToken))
             {
                 StateManager.SetState(owner, Settings.States.WaitingTaskSelection);
             }
         }
 
-        private async Task<bool> SendNextTasksAsync(Node owner, CancellationToken cancellationToken)
+        private async Task<bool> SendNextTasksAsync(Node owner, bool reschedule, CancellationToken cancellationToken)
         {
             var time = DateTime.Now.Hour >= 18
                 ? RoutineTaskTimeValue.Evening
                 : DateTime.Now.Hour >= 12
-                  ? RoutineTaskTimeValue.Afternoon
-                  : RoutineTaskTimeValue.Morning;
+                    ? RoutineTaskTimeValue.Afternoon
+                    : RoutineTaskTimeValue.Morning;
 
             var routine = await GetRoutineAsync(owner, false, cancellationToken);
 
@@ -53,9 +60,10 @@ namespace RotinaBot.Receivers
                 )
                 .Where(t => t.Time.GetValueOrDefault() == time));
 
-            await ConfigureScheduleAsync(routine, time, cancellationToken);
-
-            await SetRoutineAsync(routine, cancellationToken);
+            if (reschedule)
+            {
+                ConfigureSchedule(routine.Owner, cancellationToken);
+            }
 
             if (!tasks.Any())
                 return false;

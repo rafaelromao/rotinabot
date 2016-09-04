@@ -32,7 +32,6 @@ namespace RotinaBot.Tests.AcceptanceTests.Mocks
         {
             if (isFirstCall)
             {
-                await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
                 await _sender.SendMessageAsync(message, cancellationToken);
                 isFirstCall = false;
             }
