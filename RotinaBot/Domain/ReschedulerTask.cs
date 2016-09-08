@@ -53,17 +53,14 @@ namespace RotinaBot.Domain
                             routinesToUpdateSchedule = _routinesToUpdateSchedule.ToArray();
                             _routinesToUpdateSchedule.Clear();
                         }
+                        var time = DateTime.Now.Hour >= 18
+                            ? RoutineTaskTimeValue.Evening
+                            : DateTime.Now.Hour >= 12
+                                ? RoutineTaskTimeValue.Afternoon
+                                : RoutineTaskTimeValue.Morning;
                         foreach (var identity in routinesToUpdateSchedule)
                         {
-                            await
-                                ConfigureScheduleAsync(identity, RoutineTaskTimeValue.Morning,
-                                    _configureSchedulesCancellationTokenSource.Token);
-                            await
-                                ConfigureScheduleAsync(identity, RoutineTaskTimeValue.Afternoon,
-                                    _configureSchedulesCancellationTokenSource.Token);
-                            await
-                                ConfigureScheduleAsync(identity, RoutineTaskTimeValue.Evening,
-                                    _configureSchedulesCancellationTokenSource.Token);
+                            await ConfigureScheduleAsync(identity, time, _configureSchedulesCancellationTokenSource.Token);
                         }
                     }
                 }, _configureSchedulesCancellationTokenSource.Token, TaskCreationOptions.LongRunning,
