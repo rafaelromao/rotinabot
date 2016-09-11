@@ -7,10 +7,6 @@ using Lime.Protocol;
 using RotinaBot.Documents;
 using RotinaBot.Domain;
 using Takenet.MessagingHub.Client;
-using Takenet.MessagingHub.Client.Extensions.Bucket;
-using Takenet.MessagingHub.Client.Extensions.Delegation;
-using Takenet.MessagingHub.Client.Extensions.Scheduler;
-using Takenet.MessagingHub.Client.Host;
 using Takenet.MessagingHub.Client.Sender;
 
 namespace RotinaBot.Receivers
@@ -40,35 +36,7 @@ namespace RotinaBot.Receivers
         private async Task<bool> SendTasksForTheDayAsync(Node owner, CancellationToken cancellationToken)
         {
             var routine = await GetRoutineAsync(owner, false, cancellationToken);
-            var isSaturday = DateTime.Today.DayOfWeek == DayOfWeek.Saturday;
-            var isSunday = DateTime.Today.DayOfWeek == DayOfWeek.Saturday;
-
-            RoutineTask[] tasks;
-            if (isSaturday)
-            {
-                tasks = SortRoutineTasks(routine.Tasks.Where(
-                    t => t.IsActive && 
-                         t.LastTime.Date != DateTime.Today &&
-                         t.Days.Value != RoutineTaskDaysValue.WorkDays
-                    ));
-            }
-            else if (isSunday)
-            {
-                tasks = SortRoutineTasks(routine.Tasks.Where(
-                    t => t.IsActive && 
-                         t.LastTime.Date != DateTime.Today &&
-                         t.LastTime.Date != DateTime.Today.AddDays(-1) &&
-                         t.Days.Value != RoutineTaskDaysValue.WorkDays
-                    ));
-            }
-            else
-            {
-                tasks = SortRoutineTasks(routine.Tasks.Where(
-                    t => t.IsActive && 
-                         t.LastTime.Date != DateTime.Today &&
-                         t.Days.Value != RoutineTaskDaysValue.WeekEnds
-                    ));
-            }
+            var tasks = GetTasksForWeekEnds(routine).ToArray();
 
             if (!tasks.Any())
                 return false;

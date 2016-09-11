@@ -49,16 +49,7 @@ namespace RotinaBot.Receivers
 
             var routine = await GetRoutineAsync(owner, false, cancellationToken);
 
-            var isWorkDay = DateTime.Today.DayOfWeek != DayOfWeek.Saturday &&
-                            DateTime.Today.DayOfWeek != DayOfWeek.Sunday;
-
-            var tasks = SortRoutineTasks(routine.Tasks.Where(
-                t => t.IsActive && t.LastTime.Date != DateTime.Today &&
-                     ((t.Days.GetValueOrDefault() == RoutineTaskDaysValue.EveryDay) ||
-                      (t.Days.GetValueOrDefault() == RoutineTaskDaysValue.WorkDays && isWorkDay) ||
-                      (t.Days.GetValueOrDefault() == RoutineTaskDaysValue.WeekEnds && !isWorkDay))
-                )
-                .Where(t => t.Time.GetValueOrDefault() == time));
+            var tasks = GetTasksForWeekEnds(routine).Where(t => t.Time.GetValueOrDefault() == time).ToArray();
 
             if (reschedule)
             {

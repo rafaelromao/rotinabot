@@ -149,6 +149,39 @@ namespace RotinaBot.Receivers
             await Sender.SendMessageAsync(select, owner, cancellationToken);
         }
 
+        protected static IEnumerable<RoutineTask> GetTasksForWeekEnds(Routine routine)
+        {
+            var isSaturday = DateTime.Today.DayOfWeek == DayOfWeek.Saturday;
+            var isSunday = DateTime.Today.DayOfWeek == DayOfWeek.Sunday;
+            RoutineTask[] tasks;
+            if (isSaturday)
+            {
+                tasks = SortRoutineTasks(routine.Tasks.Where(
+                    t => t.IsActive &&
+                         t.LastTime.Date != DateTime.Today &&
+                         t.Days.Value != RoutineTaskDaysValue.WorkDays
+                    ));
+            }
+            else if (isSunday)
+            {
+                tasks = SortRoutineTasks(routine.Tasks.Where(
+                    t => t.IsActive &&
+                         t.LastTime.Date != DateTime.Today &&
+                         t.LastTime.Date != DateTime.Today.AddDays(-1) &&
+                         t.Days.Value != RoutineTaskDaysValue.WorkDays
+                    ));
+            }
+            else
+            {
+                tasks = SortRoutineTasks(routine.Tasks.Where(
+                    t => t.IsActive &&
+                         t.LastTime.Date != DateTime.Today &&
+                         t.Days.Value != RoutineTaskDaysValue.WeekEnds
+                    ));
+            }
+            return tasks;
+        }
+
         protected SelectOption[] BuildTaskSelectionOptions(IEnumerable<RoutineTask> tasks, Func<string, string> buildCommand)
         {
             var options = tasks.Select((task, i) => new SelectOption
