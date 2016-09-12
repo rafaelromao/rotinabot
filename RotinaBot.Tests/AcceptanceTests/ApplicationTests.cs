@@ -717,6 +717,45 @@ namespace RotinaBot.Tests.AcceptanceTests
 
             select?.Text.ShouldBe(Settings.Phraseology.HereAreYourNextTasks);
         }
+
+        [Test]
+        public async Task InsertTwoTaskAndCheckIfOnlyOneScheduledRemiderIsSent()
+        {
+            // Ensure there is no task already registered
+
+            await ShowThereIsNothingForTheWeekAsync();
+
+            // Create a new task
+
+            const string taskName = "Nova tarefa";
+
+            var hour = DateTime.Now.Hour;
+            var time = hour >= 18
+                ? RoutineTaskTimeValue.Evening
+                : (hour >= 12 ? RoutineTaskTimeValue.Afternoon : RoutineTaskTimeValue.Morning);
+            await CreateANewTaskFromTaskNameAsync(taskName, time: time);
+
+            // The bot should show the next tasks
+
+            await Task.Delay(TimeSpan.FromSeconds(1));
+
+            var response = await Tester.ReceiveMessageAsync();
+            response.ShouldNotBeNull();
+
+            var select = response.Content as Select;
+            select.ShouldNotBeNull();
+
+            select?.Text.ShouldBe(Settings.Phraseology.HereAreYourNextTasks);
+
+            // Create another task for the same time
+
+            await CreateANewTaskFromTaskNameAsync(taskName, time: time);
+
+            // The bot should not show the next tasks anymore
+
+            response = await Tester.ReceiveMessageAsync(TimeSpan.FromSeconds(1));
+            response.ShouldBeNull();
+        }
     }
 
     [TestFixture]
