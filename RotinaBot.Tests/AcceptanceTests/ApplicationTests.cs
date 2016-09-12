@@ -753,7 +753,9 @@ namespace RotinaBot.Tests.AcceptanceTests
 
             // The bot should not show the next tasks anymore
 
-            response = await Tester.ReceiveMessageAsync(TimeSpan.FromSeconds(1));
+            await Task.Delay(TimeSpan.FromSeconds(1));
+
+            response = await Tester.ReceiveMessageAsync(TimeSpan.FromSeconds(3));
             response.ShouldBeNull();
         }
     }
