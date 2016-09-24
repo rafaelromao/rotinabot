@@ -155,14 +155,14 @@
     ],
     "settings": {
         "phraseology": {
-            "initialMessage": "Olá, em que posso ajudar para que você tenha uma rotina mais organizada?",
-            "whatAreMyNextTasks": "Próximas tarefas",
-            "whatIHaveForToday": "Tarefas de hoje",
-            "whatIHaveForTheWeek": "Tarefas da semana",
-            "includeATaskInMyRoutine": "Incluir tarefa",
-            "excludeATaskFromMyRoutine": "Excluir tarefa",
-            "noTaskForToday": "Não há nenhuma tarefa pendente para hoje!",
-            "wheneverYouNeed": "Se precisar de mim, estou às ordens!",
+            "InitialMessage": "Olá, em que posso ajudar para que você tenha uma rotina mais organizada?",
+            "WhatAreMyNextTasks": "Próximas tarefas",
+            "WhatIHaveForToday": "Tarefas de hoje",
+            "WhatIHaveForTheWeek": "Tarefas da semana",
+            "IncludeATaskInMyRoutine": "Incluir tarefa",
+            "ExcludeATaskFromMyRoutine": "Excluir tarefa",
+            "NoTaskForToday": "Não há nenhuma tarefa pendente para hoje!",
+            "WheneverYouNeed": "Se precisar de mim, estou às ordens!",
             "TheTaskWasRemoved": "Concluído! A tarefa foi removida da sua rotina!",
             "TheTaskWasRegistered": "Concluído! A tarefa foi incluída em sua rotina!",
             "ConfirmDelete": "Confirma a exclusão da tarefa",
@@ -175,7 +175,8 @@
             "Hi": "Olá!",
             "Congratulations": "Parabéns!",
             "HereAreYourNextTasks": "Aqui estão as próximas tarefas da sua rotina:",
-            "NoTask": "Não há nenhuma tarefa registrada!",
+            "NoTask": "Não há nenhuma tarefa pendente!",
+            "CongratulationsNoOtherPendingTask": "Parabéns! Você cumpriu todas as tarefas pendentes para esta parte do dia!",
             "HereAreYourTasksForTheWeek": "Abaixo está a lista de tarefas registradas:",
             "ChooseATaskToBeDeleted": "Escolha a tarefa a ser excluída:",
             "HereAreYouTasksForToday": "Abaixo está a lista de tarefas pendentes para hoje:",
@@ -190,7 +191,7 @@
             "RegistrationFailed": "Código não confere! Deseja tentar novamente?",
             "Yes": "Yes",
             "No": "No",
-            "thisIsNotAValidPhoneNumber": "Este não é um número de telefone válido!"
+            "ThisIsNotAValidPhoneNumber": "Este não é um número de telefone válido!"
         },
         "commands": {
             "next": "/next",
