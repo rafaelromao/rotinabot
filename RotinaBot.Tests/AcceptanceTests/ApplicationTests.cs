@@ -533,13 +533,13 @@ namespace RotinaBot.Tests.AcceptanceTests
 
             response = await Tester.ReceiveMessageAsync();
 
-            var document = response.Content as PlainText;
+            var document = response.Content as Select;
             var actual = document?.Text;
 
-            var expected = Settings.Phraseology.KeepGoing;
+            var expected = Settings.Phraseology.Congratulations;
             expected.ShouldNotBeNull();
 
-            actual.ShouldBe(expected);
+            actual.ShouldStartWith(expected);
 
             // Request the bot to show the routine for the day again
 
@@ -566,15 +566,20 @@ namespace RotinaBot.Tests.AcceptanceTests
 
             await ShowThereIsNothingForTheWeekAsync();
 
+            var hour = DateTime.Now.Hour;
+            var time = hour >= 18
+                ? RoutineTaskTimeValue.Evening
+                : (hour >= 12 ? RoutineTaskTimeValue.Afternoon : RoutineTaskTimeValue.Morning);
+
             // Create a new task
 
             const string taskName = "Nova tarefa";
 
-            await CreateANewTaskFromTaskNameAsync(taskName);
+            await CreateANewTaskFromTaskNameAsync(taskName, time: time);
 
             // Create another new task
 
-            await CreateANewTaskFromTaskNameAsync(taskName);
+            await CreateANewTaskFromTaskNameAsync(taskName, time: time);
 
             // Request the bot to show the routine for the day
 
@@ -593,13 +598,13 @@ namespace RotinaBot.Tests.AcceptanceTests
 
             response = await Tester.ReceiveMessageAsync();
 
-            var document = response.Content as PlainText;
-            var actual = document?.Text;
+            var select2 = response.Content as Select;
+            var actual = select2?.Text;
 
-            var expected = Settings.Phraseology.KeepGoing;
+            var expected = Settings.Phraseology.Congratulations;
             expected.ShouldNotBeNull();
 
-            actual.ShouldBe(expected);
+            actual.ShouldStartWith(expected);
 
             // Mark the second task as completed
 
@@ -607,10 +612,10 @@ namespace RotinaBot.Tests.AcceptanceTests
 
             response = await Tester.ReceiveMessageAsync();
 
-            document = response.Content as PlainText;
+            var document = response.Content as PlainText;
             actual = document?.Text;
 
-            expected = Settings.Phraseology.KeepGoing;
+            expected = Settings.Phraseology.CongratulationsNoOtherPendingTask;
             expected.ShouldNotBeNull();
 
             actual.ShouldBe(expected);

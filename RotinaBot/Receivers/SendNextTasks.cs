@@ -7,10 +7,6 @@ using Lime.Protocol;
 using RotinaBot.Documents;
 using RotinaBot.Domain;
 using Takenet.MessagingHub.Client;
-using Takenet.MessagingHub.Client.Extensions.Bucket;
-using Takenet.MessagingHub.Client.Extensions.Delegation;
-using Takenet.MessagingHub.Client.Extensions.Scheduler;
-using Takenet.MessagingHub.Client.Host;
 using Takenet.MessagingHub.Client.Sender;
 
 namespace RotinaBot.Receivers
@@ -33,41 +29,10 @@ namespace RotinaBot.Receivers
                 owner = message.From;
                 reschedule = false;
             }
-            if (await SendNextTasksAsync(owner, reschedule, cancellationToken))
+            if (await SendNextTasksAsync(owner, reschedule, Settings.Phraseology.Hi, cancellationToken))
             {
                 StateManager.SetState(owner, Settings.States.WaitingTaskSelection);
             }
-        }
-
-        private async Task<bool> SendNextTasksAsync(Node owner, bool reschedule, CancellationToken cancellationToken)
-        {
-            var currentTime = DateTime.Now.AddMinutes(5); // Fix eventual bad sync-ed time between servers
-            var time = currentTime.Hour >= 18
-                ? RoutineTaskTimeValue.Evening
-                : currentTime.Hour >= 12
-                    ? RoutineTaskTimeValue.Afternoon
-                    : RoutineTaskTimeValue.Morning;
-
-            var routine = await GetRoutineAsync(owner, false, cancellationToken);
-
-            var tasks = GetTasksForWeekEnds(routine).Where(t => t.Time.GetValueOrDefault() == time).ToArray();
-
-            if (reschedule)
-            {
-                ConfigureSchedule(routine.Owner, cancellationToken);
-            }
-
-            if (!tasks.Any())
-                return false;
-
-            var select = new Select
-            {
-                Text = Settings.Phraseology.HereAreYourNextTasks
-            };
-            select.Options = BuildTaskSelectionOptions(tasks, RoutineTask.CreateCompleteCommand);
-            await Sender.SendMessageAsync(select, owner, cancellationToken);
-
-            return true;
         }
     }
 }

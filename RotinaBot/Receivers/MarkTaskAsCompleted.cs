@@ -58,7 +58,15 @@ namespace RotinaBot.Receivers
 
         private async Task InformTheTaskWasCompletedAsync(Node owner, CancellationToken cancellationToken)
         {
-            await Sender.SendMessageAsync(Settings.Phraseology.KeepGoing, owner, cancellationToken);
+            if (!await SendNextTasksAsync(owner, false, Settings.Phraseology.Congratulations, cancellationToken))
+            {
+                await InformThereIsNoPendingTaskForTheMomentAsync(owner, cancellationToken);
+            }
+        }
+
+        private async Task InformThereIsNoPendingTaskForTheMomentAsync(Node owner, CancellationToken cancellationToken)
+        {
+            await Sender.SendMessageAsync(Settings.Phraseology.CongratulationsNoOtherPendingTask, owner, cancellationToken);
         }
     }
 }

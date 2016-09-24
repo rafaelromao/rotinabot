@@ -1,0 +1,224 @@
+﻿{
+    "identifier": "rotinabot",
+    "accessKey": "",
+    "messageReceivers": [
+        {
+            "type": "SendInitialMenuWhenInvalidCommand",
+            "mediaType": "^((?!chatstate).)*$",
+            "priority": 1
+        },
+        {
+            "type": "SendInitialMenu",
+            "mediaType": "text/plain",
+            "content": "^(oi|olá|ola|menu|começar|comecar|iniciar|start|/start)$"
+        },
+        {
+            "type": "RequestTaskName",
+            "mediaType": "text/plain",
+            "content": "^(/new)$",
+            "outState": "default"
+        },
+        {
+            "type": "RequestTaskName",
+            "mediaType": "text/plain",
+            "content": "^(incluir|nova|new|4|i|n)$",
+            "state": "waitingInitialMenuOption"
+        },
+        {
+            "type": "SetNameForNewTask",
+            "mediaType": "text/plain",
+            "content": "^((?!(/.*)|(^[0-9]*$)|oi|olá|ola|menu|começar|comecar|iniciar|start).)*$"
+        },
+        {
+            "type": "SetDaysForNewTask",
+            "mediaType": "text/plain",
+            "content": "^(?!/.*).*$",
+            "state": "waitingTaskDays"
+        },
+        {
+            "type": "SetTimeForNewTask",
+            "mediaType": "text/plain",
+            "content": "^(?!/.*).*$",
+            "state": "waitingTaskTime"
+        },
+        {
+            "type": "FinishTaskCreation",
+            "mediaType": "text/plain",
+            "content": "^(/confirm)$",
+            "state": "waitingTaskConfirmation",
+            "outState": "default"
+        },
+        {
+            "type": "SendTasksForTheDay",
+            "mediaType": "text/plain",
+            "content": "^(/day)$"
+        },
+        {
+            "type": "SendTasksForTheDay",
+            "mediaType": "text/plain",
+            "content": "^(dia|d|day|2)$",
+            "state": "waitingInitialMenuOption"
+        },
+        {
+            "type": "SendNextTasks",
+            "mediaType": "text/plain",
+            "content": "^(/next)$"
+        },
+        {
+            "type": "SendNextTasks",
+            "mediaType": "text/plain",
+            "content": "^(próxima|proxima|next|p|1)$",
+            "state": "waitingInitialMenuOption"
+        },
+        {
+            "type": "SendNextTasks",
+            "mediaType": "application/vnd.lime.identity"
+        },
+        {
+            "type": "SendTasksForTheWeek",
+            "mediaType": "text/plain",
+            "content": "^(semana|s|3)$",
+            "state": "waitingInitialMenuOption",
+            "outState": "default"
+        },
+        {
+            "type": "SendTasksForTheWeek",
+            "mediaType": "text/plain",
+            "content": "^(/week)$",
+            "outState": "default"
+        },
+        {
+            "type": "SendTasksThatCanBeDeleted",
+            "mediaType": "text/plain",
+            "content": "^(/delete)$"
+        },
+        {
+            "type": "SendTasksThatCanBeDeleted",
+            "mediaType": "text/plain",
+            "content": "^(excluir|remover|e|r|5)$",
+            "state": "waitingInitialMenuOption"
+        },
+        {
+            "type": "FinishTaskDeletion",
+            "mediaType": "text/plain",
+            "content": "^(/confirm)$",
+            "state": "waitingDeleteTaskConfirmation",
+            "outState": "default"
+        },
+        {
+            "type": "CancelCurrentOperation",
+            "mediaType": "text/plain",
+            "content": "^(can.*|c|6)$",
+            "state": "waitingInitialMenuOption",
+            "outState": "default"
+        },
+        {
+            "type": "CancelCurrentOperation",
+            "mediaType": "text/plain",
+            "content": "^(/cancel)$",
+            "outState": "default"
+        },
+        {
+            "type": "MarkTaskAsCompleted",
+            "mediaType": "text/plain",
+            "content": "^(/complete:.*)$"
+        },
+        {
+            "type": "PrepareTaskToBeDeleted",
+            "mediaType": "text/plain",
+            "content": "^(/delete:.*)$",
+            "state": "waitingDeleteTaskSelection"
+        },
+        {
+            "type": "SavePhoneNumber",
+            "content": "^((?!(/.*)|oi|olá|ola|menu|começar|comecar|iniciar|start).)*$",
+            "mediaType": "text/plain",
+            "state": "waitingPhoneNumber"
+        },
+        {
+            "type": "IgnorePhoneNumberRegistration",
+            "mediaType": "text/plain",
+            "content": "^(/ignore)$",
+            "state": "waitingPhoneNumber"
+        },
+        {
+            "type": "ConfirmPhoneNumber",
+            "mediaType": "text/plain",
+            "content": "^((?!(/.*)|oi|olá|ola|menu|começar|comecar|iniciar|start).)*$",
+            "state": "waitingSMSCode"
+        },
+        {
+            "type": "OfferPhoneNumberRegistration",
+            "mediaType": "text/plain",
+            "content": "^(/register)$"
+        }
+    ],
+    "settings": {
+        "phraseology": {
+            "initialMessage": "Olá, em que posso ajudar para que você tenha uma rotina mais organizada?",
+            "whatAreMyNextTasks": "Próximas tarefas",
+            "whatIHaveForToday": "Tarefas de hoje",
+            "whatIHaveForTheWeek": "Tarefas da semana",
+            "includeATaskInMyRoutine": "Incluir tarefa",
+            "excludeATaskFromMyRoutine": "Excluir tarefa",
+            "noTaskForToday": "Não há nenhuma tarefa pendente para hoje!",
+            "wheneverYouNeed": "Se precisar de mim, estou às ordens!",
+            "TheTaskWasRemoved": "Concluído! A tarefa foi removida da sua rotina!",
+            "TheTaskWasRegistered": "Concluído! A tarefa foi incluída em sua rotina!",
+            "ConfirmDelete": "Confirma a exclusão da tarefa",
+            "During": "de",
+            "Confirm": "Confirmar",
+            "Cancel": "Cancelar",
+            "TheTaskWasNotFound": "A tarefa não foi encontrada!",
+            "SorryYouNeedToChooseAnOption": "Desculpe, por favor responda com uma das opções apresentadas!",
+            "WhatIsTheTaskName": "Certo! Qual o nome dessa nova tarefa?",
+            "Hi": "Olá!",
+            "Congratulations": "Parabéns!",
+            "HereAreYourNextTasks": "Aqui estão as próximas tarefas da sua rotina:",
+            "NoTask": "Não há nenhuma tarefa registrada!",
+            "HereAreYourTasksForTheWeek": "Abaixo está a lista de tarefas registradas:",
+            "ChooseATaskToBeDeleted": "Escolha a tarefa a ser excluída:",
+            "HereAreYouTasksForToday": "Abaixo está a lista de tarefas pendentes para hoje:",
+            "WhichTimeShallThisTaskBePerformed": "E em que dias da semana essa tarefa deve ser realizada?",
+            "WhichDaysShallThisTaskBePerformed": "E qual o melhor momento do dia para esta tarefa?",
+            "SorryICannotHelpYouRightNow": "Desculpe, não poderei te atender no momento!",
+            "PhoneNumberRegistrationOffer": "Olá. Gostaria de ter acesso à sua rotina em outros aplicativos de mensagem? Se sim, me informe o número de seu celular com DDD.",
+            "IDoNotWant": "Não tenho interesse!",
+            "InformRegisterPhoneCommand": "Caso mude de ideia, envie uma mensagem com o comando /register!",
+            "InformSMSCode": "Me informe por favor o código que lhe enviei por SMS",
+            "RegistrationOkay": "A partir de agora você pode buscar pelo @rotinabot no Facebook, Telegram ou OMNI, registrar seu telefone novamente e ter acesso à sua rotina também por lá.",
+            "RegistrationFailed": "Código não confere! Deseja tentar novamente?",
+            "Yes": "Yes",
+            "No": "No",
+            "thisIsNotAValidPhoneNumber": "Este não é um número de telefone válido!"
+        },
+        "commands": {
+            "next": "/next",
+            "day": "/day",
+            "week": "/week",
+            "new": "/new",
+            "confirm": "/confirm",
+            "cancel": "/cancel",
+            "delete": "/delete",
+            "ignore": "/ignore",
+            "register": "/register"
+        },
+        "states": {
+            "default": "default",
+            "waitingInitialMenuOption": "waitingInitialMenuOption",
+            "waitingDeleteTaskConfirmation": "waitingDeleteTaskConfirmation",
+            "waitingTaskSelection": "waitingTaskSelection",
+            "waitingDeleteTaskSelection": "waitingDeleteTaskSelection",
+            "waitingTaskTime": "waitingTaskTime",
+            "waitingTaskDays": "waitingTaskDays",
+            "waitingTaskConfirmation": "waitingTaskConfirmation",
+            "waitingPhoneNumber": "waitingPhoneNumber",
+            "waitingSMSCode": "waitingSMSCode"
+        },
+        "schedulerDelayInSeconds": 300
+    },
+    "settingsType": "Settings",
+    "serviceProviderType": "ServiceProvider",
+    "startupType": "Startup",
+    "schemaVersion": 2
+}

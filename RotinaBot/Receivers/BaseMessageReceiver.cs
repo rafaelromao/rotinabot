@@ -149,6 +149,37 @@ namespace RotinaBot.Receivers
             await Sender.SendMessageAsync(select, owner, cancellationToken);
         }
 
+        protected async Task<bool> SendNextTasksAsync(Node owner, bool reschedule, string phraseStart, CancellationToken cancellationToken)
+        {
+            var currentTime = DateTime.Now.AddMinutes(5); // Fix eventual bad sync-ed time between servers
+            var time = currentTime.Hour >= 18
+                ? RoutineTaskTimeValue.Evening
+                : currentTime.Hour >= 12
+                    ? RoutineTaskTimeValue.Afternoon
+                    : RoutineTaskTimeValue.Morning;
+
+            var routine = await GetRoutineAsync(owner, false, cancellationToken);
+
+            var tasks = GetTasksForWeekEnds(routine).Where(t => t.Time.GetValueOrDefault() == time).ToArray();
+
+            if (reschedule)
+            {
+                ConfigureSchedule(routine.Owner, cancellationToken);
+            }
+
+            if (!tasks.Any())
+                return false;
+
+            var select = new Select
+            {
+                Text = $"{phraseStart} {Settings.Phraseology.HereAreYourNextTasks}"
+            };
+            select.Options = BuildTaskSelectionOptions(tasks, RoutineTask.CreateCompleteCommand);
+            await Sender.SendMessageAsync(select, owner, cancellationToken);
+
+            return true;
+        }
+
         protected static IEnumerable<RoutineTask> GetTasksForWeekEnds(Routine routine)
         {
             var isSaturday = DateTime.Today.DayOfWeek == DayOfWeek.Saturday;

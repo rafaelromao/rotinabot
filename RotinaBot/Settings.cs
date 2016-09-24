@@ -28,12 +28,13 @@
         public string TheTaskWasNotFound { get; set; }
         public string SorryYouNeedToChooseAnOption { get; set; }
         public string WhatIsTheTaskName { get; set; }
+        public string Hi { get; set; }
+        public string Congratulations { get; set; }
         public string HereAreYourNextTasks { get; set; }
         public string NoTask { get; set; }
         public string HereAreYourTasksForTheWeek { get; set; }
         public string ChooseATaskToBeDeleted { get; set; }
         public string HereAreYouTasksForToday { get; set; }
-        public string KeepGoing { get; set; }
         public string WhichTimeShallThisTaskBePerformed { get; set; }
         public string WhichDaysShallThisTaskBePerformed { get; set; }
         public string SorryICannotHelpYouRightNow { get; set; }
@@ -45,6 +46,7 @@
         public string No { get; set; }
         public string ThisIsNotAValidPhoneNumber { get; set; }
         public string WhatAreMyNextTasks { get; set; }
+        public string CongratulationsNoOtherPendingTask { get; set; }
     }
 
     public class Commands
