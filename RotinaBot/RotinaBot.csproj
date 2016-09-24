@@ -78,6 +78,7 @@
     <Compile Include="Domain\ISMSAuthenticator.cs" />
     <Compile Include="Receivers\ConfirmPhoneNumber.cs" />
     <Compile Include="Domain\RoutineRepository.cs" />
+    <Compile Include="Receivers\ToggleNotifications.cs" />
     <Compile Include="Receivers\SavePhoneNumber.cs" />
     <Compile Include="Receivers\IgnorePhoneNumberRegistration.cs" />
     <Compile Include="Receivers\OfferPhoneNumberRegistration.cs" />

@@ -14,8 +14,8 @@ namespace RotinaBot.Receivers
     public class SendNextTasks : BaseMessageReceiver
     {
         public SendNextTasks(
-            IMessagingHubSender sender, IStateManager stateManager, 
-            Settings settings, RoutineRepository routineRepository, ReschedulerTask reschedulerTask) 
+            IMessagingHubSender sender, IStateManager stateManager,
+            Settings settings, RoutineRepository routineRepository, ReschedulerTask reschedulerTask)
             : base(sender, stateManager, settings, routineRepository, reschedulerTask)
         {
         }
@@ -23,16 +23,25 @@ namespace RotinaBot.Receivers
         public override async Task ReceiveAsync(Message message, CancellationToken cancellationToken)
         {
             var owner = (message.Content as IdentityDocument)?.Value?.ToNode();
-            var reschedule = true;
+            var isScheduledRequest = true;
             if (owner == null)
             {
                 owner = message.From;
-                reschedule = false;
+                isScheduledRequest = false;
             }
-            if (await SendNextTasksAsync(owner, reschedule, Settings.Phraseology.Hi, cancellationToken))
+            if (await SendNextTasksAsync(owner, isScheduledRequest, Settings.Phraseology.Hi, cancellationToken))
             {
                 StateManager.SetState(owner, Settings.States.WaitingTaskSelection);
             }
+            else if (!isScheduledRequest)
+            {
+                await InformThereIsNoPendingTasksAsync(owner, cancellationToken);
+            }
+        }
+
+        public async Task InformThereIsNoPendingTasksAsync(Node owner, CancellationToken cancellationToken)
+        {
+            await Sender.SendMessageAsync(Settings.Phraseology.CongratulationsNoOtherPendingTask, owner, cancellationToken);
         }
     }
 }

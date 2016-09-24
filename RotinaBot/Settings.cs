@@ -47,6 +47,9 @@
         public string ThisIsNotAValidPhoneNumber { get; set; }
         public string WhatAreMyNextTasks { get; set; }
         public string CongratulationsNoOtherPendingTask { get; set; }
+        public string Notifications { get; set; }
+        public string YouWillNoLongerReceiveNotifications { get; set; }
+        public string YouWillNowReceiveNotifications { get; set; }
     }
 
     public class Commands
@@ -60,6 +63,7 @@
         public string Delete { get; set; }
         public string Ignore { get; set; }
         public string Register { get; set; }
+        public string Notifications { get; set; }
     }
 
     public class States

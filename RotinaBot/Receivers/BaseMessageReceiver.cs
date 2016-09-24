@@ -140,16 +140,22 @@ namespace RotinaBot.Receivers
                     },
                     new SelectOption
                     {
+                        Text = Settings.Phraseology.Notifications,
+                        Value = new PlainText { Text = Settings.Commands.Notifications },
+                        Order = 6
+                    },
+                    new SelectOption
+                    {
                         Text = Settings.Phraseology.Cancel,
                         Value = new PlainText { Text = Settings.Commands.Cancel },
-                        Order = 6
+                        Order = 7
                     }
                 }
             };
             await Sender.SendMessageAsync(select, owner, cancellationToken);
         }
 
-        protected async Task<bool> SendNextTasksAsync(Node owner, bool reschedule, string phraseStart, CancellationToken cancellationToken)
+        protected async Task<bool> SendNextTasksAsync(Node owner, bool isScheduledRequest, string phraseStart, CancellationToken cancellationToken)
         {
             var currentTime = DateTime.Now.AddMinutes(5); // Fix eventual bad sync-ed time between servers
             var time = currentTime.Hour >= 18
@@ -162,9 +168,12 @@ namespace RotinaBot.Receivers
 
             var tasks = GetTasksForWeekEnds(routine).Where(t => t.Time.GetValueOrDefault() == time).ToArray();
 
-            if (reschedule)
+            if (isScheduledRequest)
             {
                 ConfigureSchedule(routine.Owner, cancellationToken);
+
+                if (routine.DisableNotifications)
+                    return false;
             }
 
             if (!tasks.Any())

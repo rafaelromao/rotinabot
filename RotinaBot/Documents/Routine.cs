@@ -15,6 +15,7 @@ namespace RotinaBot.Documents
         private const string PHONENUMBERREGISTRATIONSTATUS_KEY = "phoneNumberRegistrationStatus";
         private const string PHONENUMBER_KEY = "phoneNumber";
         private const string AUTHENTICATIONCODE_KEY = "authenticationCode";
+        private const string DISABLENOTIFICATIONS_KEY = "DisableNotifications";
 
         [DataMember(Name = OWNER_KEY)]
         public Identity Owner { get; set; }
@@ -34,6 +35,9 @@ namespace RotinaBot.Documents
         public string PhoneNumber { get; set; }
         [DataMember(Name = AUTHENTICATIONCODE_KEY)]
         public string AuthenticationCode { get; set; }
+
+        [DataMember(Name = DISABLENOTIFICATIONS_KEY)]
+        public bool DisableNotifications { get; set; }
 
         public Routine() : base(MediaType.Parse("application/x-routine+json"))
         {
