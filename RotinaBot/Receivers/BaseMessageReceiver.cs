@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -106,7 +106,6 @@ namespace RotinaBot.Receivers
             var select = new Select
             {
                 Text = Settings.Phraseology.InitialMessage,
-                Scope = SelectScope.Persistent,
                 Options = new[]
                 {
                     new SelectOption
@@ -184,6 +183,7 @@ namespace RotinaBot.Receivers
             {
                 Text = $"{phraseStart} {Settings.Phraseology.HereAreYourNextTasks}"
             };
+
             select.Options = BuildTaskSelectionOptions(tasks, RoutineTask.CreateCompleteCommand);
             await Sender.SendMessageAsync(select, owner, cancellationToken);
 
@@ -227,7 +227,7 @@ namespace RotinaBot.Receivers
         {
             var options = tasks.Select((task, i) => new SelectOption
             {
-                Text = $"{task.Name} {Settings.Phraseology.During} {task.Time.GetValueOrDefault().Name().ToLower()}",
+                Text = $"{GetDelayEmoticon(task)} {task.Name} {Settings.Phraseology.During} {task.Time.GetValueOrDefault().Name().ToLower()}",
                 Value = new PlainText { Text = buildCommand(task.Id.ToString()) },
                 Order = i
             }).ToList();
@@ -238,6 +238,29 @@ namespace RotinaBot.Receivers
                 Order = options.Count
             });
             return options.ToArray();
+        }
+
+        private string GetDelayEmoticon(RoutineTask task)
+        {
+            var days = task.Delay.TotalDays;
+            if (task.Days.GetValueOrDefault() == RoutineTaskDaysValue.WeekEnds)
+            {
+                if (days > 35) return "😢";
+                if (days > 28) return "😞";
+                if (days > 21) return "😳";
+                if (days > 14) return "😧";
+                if (days > 7) return "😮"; 
+                return "😎";
+            }
+            else
+            {
+                if (days > 28) return "😢";
+                if (days > 21) return "😞";
+                if (days > 14) return "😳";
+                if (days > 7) return "😧";
+                if (days > 2) return "😮";
+                return "😎";
+            }
         }
     }
 }

@@ -151,6 +151,12 @@
             "type": "OfferPhoneNumberRegistration",
             "mediaType": "text/plain",
             "content": "^(/register)$"
+        },
+        {
+            "type": "ToggleNotifications",
+            "mediaType": "text/plain",
+            "content": "^(/notifications)$",
+            "outState": "default"
         }
     ],
     "settings": {
@@ -191,7 +197,10 @@
             "RegistrationFailed": "Código não confere! Deseja tentar novamente?",
             "Yes": "Yes",
             "No": "No",
-            "ThisIsNotAValidPhoneNumber": "Este não é um número de telefone válido!"
+            "ThisIsNotAValidPhoneNumber": "Este não é um número de telefone válido!",
+            "Notifications": "Notificações",
+            "YouWillNoLongerReceiveNotifications": "A partir de agora, você não irá mais receber notificações do RotinaBot. Acesse esta opção novamente caso mude de ideia!",
+            "YouWillNowReceiveNotifications": "A partir de agora, você irá receber notificações do RotinaBot. Acesse esta opção novamente caso mude de ideia!"
         },
         "commands": {
             "next": "/next",
@@ -202,7 +211,8 @@
             "cancel": "/cancel",
             "delete": "/delete",
             "ignore": "/ignore",
-            "register": "/register"
+            "register": "/register",
+            "notifications": "/notifications"
         },
         "states": {
             "default": "default",

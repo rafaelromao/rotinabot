@@ -267,7 +267,7 @@ namespace RotinaBot.Tests.AcceptanceTests
             var select = response.Content as Select;
             select.ShouldNotBeNull();
 
-            select?.Options.Any(o => o.Text.StartsWith(taskName)).ShouldBeTrue();
+            select?.Options.Any(o => o.Text.Contains(taskName)).ShouldBeTrue();
 
             // Request the bot to show the routine for the week
 
