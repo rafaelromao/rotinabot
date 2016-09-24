@@ -106,6 +106,7 @@ namespace RotinaBot.Receivers
             var select = new Select
             {
                 Text = Settings.Phraseology.InitialMessage,
+                Scope = SelectScope.Persistent,
                 Options = new[]
                 {
                     new SelectOption

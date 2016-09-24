@@ -25,16 +25,10 @@ namespace RotinaBot.Tests.AcceptanceTests.Mocks
             _sender = sender;
         }
 
-        private bool isFirstCall = true;
-
         public async Task ScheduleMessageAsync(Message message, DateTimeOffset when,
             CancellationToken cancellationToken = new CancellationToken())
         {
-            if (isFirstCall)
-            {
-                await _sender.SendMessageAsync(message, cancellationToken);
-                isFirstCall = false;
-            }
+            await _sender.SendMessageAsync(message, cancellationToken);
         }
     }
 }

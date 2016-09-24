@@ -694,43 +694,14 @@ namespace RotinaBot.Tests.AcceptanceTests
     public class TestApplicationWithFakeBucketAndScheduler : BaseTestFixture<FakeServiceProviderWithFakeBucketAndScheduler>
     {
         [Test]
-        public async Task InsertATaskAndCheckIfTheScheduledRemiderIsSent()
-        {
-            // Ensure there is no task already registered
-
-            await ShowThereIsNothingForTheWeekAsync();
-
-            // Create a new task
-
-            const string taskName = "Nova tarefa";
-
-            var hour = DateTime.Now.Hour;
-            var time = hour >= 18
-                ? RoutineTaskTimeValue.Evening
-                : (hour >= 12 ? RoutineTaskTimeValue.Afternoon : RoutineTaskTimeValue.Morning);
-            await CreateANewTaskFromTaskNameAsync(taskName, time: time);
-
-            // The bot should show the next tasks
-
-            await Task.Delay(TimeSpan.FromSeconds(1));
-
-            var response = await Tester.ReceiveMessageAsync();
-            response.ShouldNotBeNull();
-
-            var select = response.Content as Select;
-            select.ShouldNotBeNull();
-
-            select?.Text.ShouldBe($"{Settings.Phraseology.Hi} {Settings.Phraseology.HereAreYourNextTasks}");
-        }
-
-        [Test]
-        public async Task DisableNotificationsInsertATaskAndCheckIfTheScheduledRemiderIsNotSent()
+        public async Task DisableNotificationsInsertATaskAndCheckThatTheScheduledRemiderIsNotSent()
         {
             // Ensure there is no task already registered
 
             await ShowThereIsNothingForTheWeekAsync();
 
             // Disable notifications
+
             await Tester.SendMessageAsync(Settings.Commands.Notifications);
 
             var response = await Tester.ReceiveMessageAsync();
@@ -753,7 +724,7 @@ namespace RotinaBot.Tests.AcceptanceTests
                 : (hour >= 12 ? RoutineTaskTimeValue.Afternoon : RoutineTaskTimeValue.Morning);
             await CreateANewTaskFromTaskNameAsync(taskName, time: time);
 
-            // The bot should not show the next tasks anymore
+            // The bot should not show the next tasks
 
             await Task.Delay(TimeSpan.FromSeconds(1));
 
@@ -761,6 +732,7 @@ namespace RotinaBot.Tests.AcceptanceTests
             response.ShouldBeNull();
 
             // Enable notifications
+
             await Tester.SendMessageAsync(Settings.Commands.Notifications);
 
             response = await Tester.ReceiveMessageAsync();

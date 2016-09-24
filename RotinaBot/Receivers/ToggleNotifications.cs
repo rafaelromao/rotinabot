@@ -18,23 +18,29 @@ namespace RotinaBot.Receivers
 
         public override async Task ReceiveAsync(Message message, CancellationToken cancellationToken)
         {
-            if (await DisableNotificationsAsync(message.From, cancellationToken))
-            {
-                await InformNotificationsWhereDisabledAsync(message.From, cancellationToken);
-            }
-            else
+            await ToggleNotificationsAsync(message.From, cancellationToken);
+
+            if (await AreNotificationsEnabledAsync(message.From, cancellationToken))
             {
                 await InformNotificationsWhereEnabledAsync(message.From, cancellationToken);
             }
+            else
+            {
+                await InformNotificationsWhereDisabledAsync(message.From, cancellationToken);
+            }
         }
 
-        private async Task<bool> DisableNotificationsAsync(Node owner, CancellationToken cancellationToken)
+        private async Task ToggleNotificationsAsync(Node owner, CancellationToken cancellationToken)
         {
             var routine = await GetRoutineAsync(owner, true, cancellationToken);
-            var result = !routine.DisableNotifications;
             routine.DisableNotifications = !routine.DisableNotifications;
             await SetRoutineAsync(routine, cancellationToken);
-            return result;
+        }
+
+        private async Task<bool> AreNotificationsEnabledAsync(Node owner, CancellationToken cancellationToken)
+        {
+            var routine = await GetRoutineAsync(owner, true, cancellationToken);
+            return !routine.DisableNotifications;
         }
 
         public async Task InformNotificationsWhereDisabledAsync(Node owner, CancellationToken cancellationToken)
