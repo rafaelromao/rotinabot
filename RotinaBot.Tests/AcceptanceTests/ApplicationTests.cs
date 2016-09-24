@@ -720,7 +720,7 @@ namespace RotinaBot.Tests.AcceptanceTests
             var select = response.Content as Select;
             select.ShouldNotBeNull();
 
-            select?.Text.ShouldBe(Settings.Phraseology.HereAreYourNextTasks);
+            select?.Text.ShouldBe($"{Settings.Phraseology.Hi} {Settings.Phraseology.HereAreYourNextTasks}");
         }
 
         [Test]
@@ -750,7 +750,7 @@ namespace RotinaBot.Tests.AcceptanceTests
             var select = response.Content as Select;
             select.ShouldNotBeNull();
 
-            select?.Text.ShouldBe(Settings.Phraseology.HereAreYourNextTasks);
+            select?.Text.ShouldBe($"{Settings.Phraseology.Hi} {Settings.Phraseology.HereAreYourNextTasks}");
 
             // Create another task for the same time
 
