@@ -41,9 +41,10 @@ namespace RotinaBot.Receivers
 
         private async Task<bool> SendNextTasksAsync(Node owner, bool reschedule, CancellationToken cancellationToken)
         {
-            var time = DateTime.Now.Hour >= 18
+            var currentTime = DateTime.Now.AddMinutes(5); // Fix eventual bad sync-ed time between servers
+            var time = currentTime.Hour >= 18
                 ? RoutineTaskTimeValue.Evening
-                : DateTime.Now.Hour >= 12
+                : currentTime.Hour >= 12
                     ? RoutineTaskTimeValue.Afternoon
                     : RoutineTaskTimeValue.Morning;
 
