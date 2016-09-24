@@ -724,6 +724,57 @@ namespace RotinaBot.Tests.AcceptanceTests
         }
 
         [Test]
+        public async Task DisableNotificationsInsertATaskAndCheckIfTheScheduledRemiderIsNotSent()
+        {
+            // Ensure there is no task already registered
+
+            await ShowThereIsNothingForTheWeekAsync();
+
+            // Disable notifications
+            await Tester.SendMessageAsync(Settings.Commands.Notifications);
+
+            var response = await Tester.ReceiveMessageAsync();
+
+            var document = response.Content as PlainText;
+            var actual = document?.Text;
+
+            var expected = Settings.Phraseology.YouWillNoLongerReceiveNotifications;
+            expected.ShouldNotBeNull();
+
+            actual.ShouldBe(expected);
+
+            // Create a new task
+
+            const string taskName = "Nova tarefa";
+
+            var hour = DateTime.Now.Hour;
+            var time = hour >= 18
+                ? RoutineTaskTimeValue.Evening
+                : (hour >= 12 ? RoutineTaskTimeValue.Afternoon : RoutineTaskTimeValue.Morning);
+            await CreateANewTaskFromTaskNameAsync(taskName, time: time);
+
+            // The bot should not show the next tasks anymore
+
+            await Task.Delay(TimeSpan.FromSeconds(1));
+
+            response = await Tester.ReceiveMessageAsync(TimeSpan.FromSeconds(3));
+            response.ShouldBeNull();
+
+            // Enable notifications
+            await Tester.SendMessageAsync(Settings.Commands.Notifications);
+
+            response = await Tester.ReceiveMessageAsync();
+
+            document = response.Content as PlainText;
+            actual = document?.Text;
+
+            expected = Settings.Phraseology.YouWillNowReceiveNotifications;
+            expected.ShouldNotBeNull();
+
+            actual.ShouldBe(expected);
+        }
+
+        [Test]
         public async Task InsertTwoTaskAndCheckIfOnlyOneScheduledRemiderIsSent()
         {
             // Ensure there is no task already registered
