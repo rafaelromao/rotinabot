@@ -533,7 +533,7 @@ namespace RotinaBot.Tests.AcceptanceTests
 
             response = await Tester.ReceiveMessageAsync();
 
-            var document = response.Content as Select;
+            var document = response.Content as PlainText;
             var actual = document?.Text;
 
             var expected = Settings.Phraseology.Congratulations;
