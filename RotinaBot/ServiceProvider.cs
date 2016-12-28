@@ -46,5 +46,10 @@ namespace RotinaBot
         {
             Container.RegisterSingleton(serviceType, instance);
         }
+
+        public void RegisterService(Type serviceType, Func<object> instanceFactory)
+        {
+            Container.RegisterSingleton(serviceType, instanceFactory());
+        }
     }
 }

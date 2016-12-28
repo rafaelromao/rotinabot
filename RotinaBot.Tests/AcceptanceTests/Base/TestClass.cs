@@ -1,7 +1,4 @@
 using System;
-using NUnit.Framework;
-using RotinaBot.Tests.AcceptanceTests.Mocks;
-using Takenet.MessagingHub.Client.Extensions.Bucket;
 using Takenet.MessagingHub.Client.Tester;
 
 namespace RotinaBot.Tests.AcceptanceTests.Base
@@ -20,7 +17,7 @@ namespace RotinaBot.Tests.AcceptanceTests.Base
         // Application Settings
         protected Settings Settings { get; set; }
 
-        [OneTimeSetUp]
+        //[OneTimeSetUp]
         protected override void SetUp()
         {
             try
@@ -34,14 +31,7 @@ namespace RotinaBot.Tests.AcceptanceTests.Base
             Settings = Tester.GetService<Settings>();
         }
 
-        [SetUp]
-        protected void TestSetUp()
-        {
-            ((FakeBucketExtension)Tester.GetService<IBucketExtension>()).Clear();
-            Tester.IgnoreMessageAsync(TimeSpan.FromMilliseconds(100)).Wait();
-        }
-
-        [OneTimeTearDown]
+        //[OneTimeTearDown]
         protected override void TearDown()
         {
             base.TearDown();

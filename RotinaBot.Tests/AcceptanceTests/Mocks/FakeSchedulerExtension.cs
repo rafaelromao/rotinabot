@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Lime.Protocol;
+using Takenet.Iris.Messaging.Resources;
 using Takenet.MessagingHub.Client.Extensions.Scheduler;
 using Takenet.MessagingHub.Client.Sender;
 
@@ -9,6 +10,12 @@ namespace RotinaBot.Tests.AcceptanceTests.Mocks
 {
     internal class NoSchedulerExtension : ISchedulerExtension
     {
+        public Task<Schedule> GetScheduledMessageAsync(string messageId, 
+            CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return Task.FromResult(default(Schedule));
+        }
+
         public Task ScheduleMessageAsync(Message message, DateTimeOffset when,
             CancellationToken cancellationToken = new CancellationToken())
         {
@@ -23,6 +30,12 @@ namespace RotinaBot.Tests.AcceptanceTests.Mocks
         public FakeSchedulerExtension(IMessagingHubSender sender)
         {
             _sender = sender;
+        }
+
+        public Task<Schedule> GetScheduledMessageAsync(string messageId,
+            CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return Task.FromResult(default(Schedule));
         }
 
         public async Task ScheduleMessageAsync(Message message, DateTimeOffset when,
