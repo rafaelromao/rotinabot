@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -35,13 +36,12 @@ namespace RotinaBot.Receivers
             task.IsActive = true;
             await SetRoutineAsync(routine, cancellationToken);
 
-            ConfigureSchedule(routine.Owner, cancellationToken);
+            ConfigureSchedule(new Tuple<Identity, RoutineTaskTimeValue>(routine.Owner, task.Time.Value), cancellationToken);
         }
 
         private async Task InformTheTaskWasCreatedAsync(Node owner, CancellationToken cancellationToken)
         {
             await Sender.SendMessageAsync(Settings.Phraseology.TheTaskWasRegistered, owner, cancellationToken);
         }
-
     }
 }

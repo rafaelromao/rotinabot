@@ -45,9 +45,9 @@ namespace RotinaBot.Receivers
             return await _routineRepository.GetRoutineAsync(owner, allowSlaveRoutine, cancellationToken);
         }
 
-        public void ConfigureSchedule(Identity owner, CancellationToken cancellationToken)
+        public void ConfigureSchedule(Tuple<Identity, RoutineTaskTimeValue> schedule, CancellationToken cancellationToken)
         {
-            _reschedulerTask.ConfigureSchedule(owner, cancellationToken);
+            _reschedulerTask.ConfigureSchedule(schedule, cancellationToken);
         }
 
         protected static RoutineTask[] SortRoutineTasks(IEnumerable<RoutineTask> tasks)
@@ -170,7 +170,7 @@ namespace RotinaBot.Receivers
 
             if (isScheduledRequest)
             {
-                ConfigureSchedule(routine.Owner, cancellationToken);
+                ConfigureSchedule(new Tuple<Identity, RoutineTaskTimeValue>(owner, time), cancellationToken);
 
                 if (routine.DisableNotifications)
                     return false;

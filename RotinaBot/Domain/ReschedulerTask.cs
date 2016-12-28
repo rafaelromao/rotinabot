@@ -32,7 +32,8 @@ namespace RotinaBot.Domain
 
         private CancellationTokenSource _configureSchedulesCancellationTokenSource;
 
-        private readonly HashSet<Identity> _routinesToUpdateSchedule = new HashSet<Identity>();
+        private readonly HashSet<Tuple<Identity, RoutineTaskTimeValue>> _pendingSchedules 
+            = new HashSet<Tuple<Identity, RoutineTaskTimeValue>>();
 
         public virtual void Start()
         {
@@ -48,20 +49,15 @@ namespace RotinaBot.Domain
 
                         await DelayBeforeReschedule();
 
-                        Identity[] routinesToUpdateSchedule;
-                        lock (_routinesToUpdateSchedule)
+                        Tuple<Identity, RoutineTaskTimeValue>[] pendingSchedules;
+                        lock (_pendingSchedules)
                         {
-                            routinesToUpdateSchedule = _routinesToUpdateSchedule.ToArray();
-                            _routinesToUpdateSchedule.Clear();
+                            pendingSchedules = _pendingSchedules.ToArray();
+                            _pendingSchedules.Clear();
                         }
-                        var time = DateTime.Now.Hour >= 18
-                            ? RoutineTaskTimeValue.Evening
-                            : DateTime.Now.Hour >= 12
-                                ? RoutineTaskTimeValue.Afternoon
-                                : RoutineTaskTimeValue.Morning;
-                        foreach (var identity in routinesToUpdateSchedule)
+                        foreach (var schedule in pendingSchedules)
                         {
-                            await ConfigureScheduleAsync(identity, time, _configureSchedulesCancellationTokenSource.Token);
+                            await ConfigureScheduleAsync(schedule.Item1, schedule.Item2, _configureSchedulesCancellationTokenSource.Token);
                         }
                     }
                 }, _configureSchedulesCancellationTokenSource.Token, TaskCreationOptions.LongRunning,
@@ -74,13 +70,13 @@ namespace RotinaBot.Domain
             await Task.Delay(TimeSpan.FromSeconds(_settings.SchedulerDelayInSeconds));
         }
 
-        public void ConfigureSchedule(Identity owner, CancellationToken cancellationToken)
+        public void ConfigureSchedule(Tuple<Identity, RoutineTaskTimeValue> schedule, CancellationToken cancellationToken)
         {
-            lock (_routinesToUpdateSchedule)
+            lock (_pendingSchedules)
             {
-                if (!_routinesToUpdateSchedule.Contains(owner))
+                if (!_pendingSchedules.Contains(schedule))
                 {
-                    _routinesToUpdateSchedule.Add(owner);
+                    _pendingSchedules.Add(schedule);
                 }
             }
         }

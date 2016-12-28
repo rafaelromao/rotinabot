@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Lime.Protocol.Serialization;
@@ -24,6 +25,8 @@ namespace RotinaBot
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
+            Trace.Listeners.Add(new ConsoleTraceListener());
+
             TypeUtil.RegisterDocument<Routine>();
             TypeUtil.RegisterDocument<PhoneNumber>();
 
