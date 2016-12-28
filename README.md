@@ -1,9 +1,9 @@
 # RotinaBot
 RotinaBot is a chatbot to control you routine.
 
-Developed using the [OMNI Messaging Hub](http://omni.messaginghub.io) platform.
+Developed using the [Blip.ai](http://blip.ai) platform.
 
-- Create tasks for work days, week ends or every day.
+- Create tasks for work days, weekends or both.
 - Group tasks by morning, afternoon and evening.
 - Consult your tasks for the day and week.
 - Mark tasks as completed.
@@ -12,7 +12,7 @@ Developed using the [OMNI Messaging Hub](http://omni.messaginghub.io) platform.
 Available at:
 - [Facebook Messenger](http://m.me/rotinabot) as @rotinabot
 - [Telegram](https://telegram.me/rotinabot) as @rotinabot
-- [OMNI](http://goo.gl/GbY2Ut) as RotinaBot
+- [Blip](http://goo.gl/GbY2Ut) as RotinaBot
 
 License:
 - MIT
