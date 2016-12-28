@@ -20,7 +20,7 @@ namespace RotinaBot.Domain
         private readonly Application _application;
         private readonly Settings _settings;
 
-        public ReschedulerTask(ISchedulerExtension scheduler, IDelegationExtension delegation, 
+        public ReschedulerTask(ISchedulerExtension scheduler, IDelegationExtension delegation,
                RoutineRepository routineRepository, Application application, Settings settings)
         {
             _scheduler = scheduler;
@@ -87,7 +87,7 @@ namespace RotinaBot.Domain
 
         private async Task ConfigureScheduleAsync(Identity owner, RoutineTaskTimeValue time, CancellationToken cancellationToken)
         {
-            Debug.WriteLine($"Start scheduling reminder for {owner} at {time}!");
+            Trace.WriteLine($"Start scheduling reminder for {owner} at {time}!");
             try
             {
                 var routine = await _routineRepository.GetRoutineAsync(owner, false, cancellationToken);
@@ -149,11 +149,11 @@ namespace RotinaBot.Domain
 
                     await _routineRepository.SetRoutineAsync(routine, cancellationToken);
                 }
-                Debug.WriteLine($"Finished scheduling reminder for {owner} at {time}!");
+                Trace.WriteLine($"Finished scheduling reminder for {owner} at {time}!");
             }
             catch (Exception e)
             {
-                Debug.WriteLine($"Failed scheduling reminder for {owner} at {time}: {e}");
+                Trace.WriteLine($"Failed scheduling reminder for {owner} at {time}: {e}");
                 throw;
             }
         }
