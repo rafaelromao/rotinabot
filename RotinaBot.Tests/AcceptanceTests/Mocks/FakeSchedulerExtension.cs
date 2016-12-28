@@ -13,7 +13,7 @@ namespace RotinaBot.Tests.AcceptanceTests.Mocks
         public Task<Schedule> GetScheduledMessageAsync(string messageId, 
             CancellationToken cancellationToken = default(CancellationToken))
         {
-            return Task.FromResult(default(Schedule));
+            throw new NotImplementedException();
         }
 
         public Task ScheduleMessageAsync(Message message, DateTimeOffset when,
@@ -35,7 +35,7 @@ namespace RotinaBot.Tests.AcceptanceTests.Mocks
         public Task<Schedule> GetScheduledMessageAsync(string messageId,
             CancellationToken cancellationToken = default(CancellationToken))
         {
-            return Task.FromResult(default(Schedule));
+            throw new NotImplementedException();
         }
 
         public async Task ScheduleMessageAsync(Message message, DateTimeOffset when,
