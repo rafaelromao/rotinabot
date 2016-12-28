@@ -36,7 +36,7 @@ namespace RotinaBot.Receivers
         private async Task<bool> SendTasksForTheDayAsync(Node owner, CancellationToken cancellationToken)
         {
             var routine = await GetRoutineAsync(owner, false, cancellationToken);
-            var tasks = GetTasksForWeekEnds(routine).ToArray();
+            var tasks = GetNextTasks(routine).ToArray();
 
             if (!tasks.Any())
                 return false;

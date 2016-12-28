@@ -49,7 +49,7 @@ namespace RotinaBot.Domain
 
                 return routine;
             }
-            catch (Exception e)
+            catch
             {
                 return new Routine { Owner = owner };
             }
@@ -75,7 +75,7 @@ namespace RotinaBot.Domain
                 },
                 TimeSpan.FromDays(short.MaxValue),
                 cancellationToken
-                );
+            );
         }
     }
 }

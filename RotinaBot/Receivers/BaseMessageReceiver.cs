@@ -166,7 +166,7 @@ namespace RotinaBot.Receivers
 
             var routine = await GetRoutineAsync(owner, false, cancellationToken);
 
-            var tasks = GetTasksForWeekEnds(routine).Where(t => t.Time.GetValueOrDefault() == time).ToArray();
+            var tasks = GetNextTasks(routine).Where(t => t.Time.GetValueOrDefault() == time).ToArray();
 
             if (isScheduledRequest)
             {
@@ -190,7 +190,7 @@ namespace RotinaBot.Receivers
             return true;
         }
 
-        protected static IEnumerable<RoutineTask> GetTasksForWeekEnds(Routine routine)
+        protected static IEnumerable<RoutineTask> GetNextTasks(Routine routine)
         {
             var isSaturday = DateTime.Today.DayOfWeek == DayOfWeek.Saturday;
             var isSunday = DateTime.Today.DayOfWeek == DayOfWeek.Sunday;
