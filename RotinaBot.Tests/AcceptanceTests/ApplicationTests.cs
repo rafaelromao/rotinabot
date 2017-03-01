@@ -447,7 +447,7 @@ namespace RotinaBot.Tests.AcceptanceTests
             var select = response.Content as Select;
             select.ShouldNotBeNull();
 
-            select?.Options.Length.ShouldBe(3);
+            select?.Options.Length.ShouldBe(2);
 
             // Cancel the task selection
 
@@ -486,7 +486,7 @@ namespace RotinaBot.Tests.AcceptanceTests
             var select = response.Content as Select;
             select.ShouldNotBeNull();
 
-            select?.Options.Length.ShouldBe(3);
+            select?.Options.Length.ShouldBe(2);
 
             // Cancel the task selection
 
@@ -525,7 +525,7 @@ namespace RotinaBot.Tests.AcceptanceTests
             var select = response.Content as Select;
             select.ShouldNotBeNull();
 
-            select?.Options.Length.ShouldBe(3);
+            select?.Options.Length.ShouldBe(2);
 
             // Mark the first task as completed
 
@@ -533,7 +533,7 @@ namespace RotinaBot.Tests.AcceptanceTests
 
             response = await Tester.ReceiveMessageAsync();
 
-            var document = response.Content as PlainText;
+            var document = response.Content as Select;
             var actual = document?.Text;
 
             var expected = Settings.Phraseology.Congratulations;
@@ -550,7 +550,7 @@ namespace RotinaBot.Tests.AcceptanceTests
             select = response.Content as Select;
             select.ShouldNotBeNull();
 
-            select?.Options.Length.ShouldBe(2);
+            select?.Options.Length.ShouldBe(1);
 
             // Cancel the task selection
 
@@ -590,7 +590,7 @@ namespace RotinaBot.Tests.AcceptanceTests
             var select = response.Content as Select;
             select.ShouldNotBeNull();
 
-            select?.Options.Length.ShouldBe(3);
+            select?.Options.Length.ShouldBe(2);
 
             // Mark the first task as completed
 
@@ -651,7 +651,7 @@ namespace RotinaBot.Tests.AcceptanceTests
             var actual = select?.Text;
             actual.ShouldBe(expected);
 
-            select?.Options.Length.ShouldBe(2);
+            select?.Options.Length.ShouldBe(1);
 
             // Select the first task to be deleted
 

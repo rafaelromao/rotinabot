@@ -157,7 +157,7 @@ namespace RotinaBot.Receivers
 
         protected async Task<bool> SendNextTasksAsync(Node owner, bool isScheduledRequest, string phraseStart, CancellationToken cancellationToken)
         {
-            var currentTime = DateTime.Now.AddMinutes(5); // Fix eventual bad sync-ed time between servers
+            var currentTime = DateTime.Now;
             var time = currentTime.Hour >= 18
                 ? RoutineTaskTimeValue.Evening
                 : currentTime.Hour >= 12
@@ -227,16 +227,10 @@ namespace RotinaBot.Receivers
         {
             var options = tasks.Select((task, i) => new SelectOption
             {
-                Text = $"{GetDelayEmoticon(task)} {task.Name} {Settings.Phraseology.During} {task.Time.GetValueOrDefault().Name().ToLower()}",
+                Text = $"{GetDelayEmoticon(task)} {task.Name}",
                 Value = new PlainText { Text = buildCommand(task.Id.ToString()) },
                 Order = i
             }).ToList();
-            options.Add(new SelectOption
-            {
-                Text = Settings.Phraseology.Cancel,
-                Value = new PlainText { Text = Settings.Commands.Cancel },
-                Order = options.Count
-            });
             return options.ToArray();
         }
 
